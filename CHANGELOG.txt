@@ -1,0 +1,61 @@
+CHANGELOG:
+
+TODO -  !!! Add props field to localtemptrans, dtransactions, and all other subtotaling tbls. 
+
+TODO - Add props field to products on server + lanes
+
+TODO - replace ini.php on lanes
+
+TODO - % + $ calc scripts for insertion into rcpt. footers.
+
+TODO - test sync
+
+NEW - MYSQL_CONNECT DEPRECATED.  all config variables set in define.conf at webroot.
+
+NEW - Messages.php updates is4c_op.messages with onscreen + receipt footer msgs.  Rewritten ini.php (for lanes) to pull session variables from DB if set.  SHORTTAGS allow for limited test-replacement, currently no GUI method for adding new tags
+
+FIXED - improved dynamic dept list creation, for reporting input forms
+
+NEW - activated the COST and MARGIN fields in Movement Report.  Conditional formatting red = margin < 20, green = margin > 40    FYI: GROSS MARGIN = ((C - P) / P) * 100
+
+NEW - replaced header.html w/ header.php for more fun scripty goodness
+
+FIXED - navbar cleaned up and a lot easier to work with now.  still not totally modular, but on it's way.
+
+NEW - UNTESTED - New sync module dynamically builds funct list using contents of /sync dir, file named reload<tablename>.php will be included in the list.  Maybe include same dyn list in navbar?
+
+NEW - upgraded header to use an easily editable head.php file for throwing new refs into the <head> tag, 
+
+NEW - header now calls ALL central functions automatically, so only need to include header.php in scripts to access most of fannie's functionality
+
+NEW - more global vars set in mysql_connect.php for more flexible development, its just better this way.
+
+FIXED - standardized DB calls + vars throughout the software to one central DB connector and global vars in /define.conf incl. DB_NAME, DB_LOGNAME for is4c_log, PRODUCTS_TBL for easy dev/testing, plus some directory location and lane configs.  DOCROOT and SRCROOT make moving code around easier + makes link refs static instead of relative.
+
+NEW - itemMaintenance() function for easy and flexible future development of item maint. UI, SO much better this way!
+
+NEW - Streamlined item add/update into one file
+
+NEW - This one had been sitting in the closet awhile:  Added Print Shelftags button to Batchlist.  
+
+NEW - added Cost, and Vendor filed to itemMaint, uses the product_details tbl
+
+FIXED - ChainedSelectors completely rewritten using jQuery, SO much better this way!
+
+NEW - itemProperties report, still in early alpha, but queries have been written and data is looking accurate and good so far, didnt get too far since the model for reporting on item props will change to Tlog-based
+
+FIXED - added Clear Filters button to manually initialize the table filter fields
+
+FIXED - Updated datepicker to be less dumb about user inputs, now using jquery datepicker w/ keyboard control, better onBlur reaction 
+
+FIXED - Both panels WILL remain open in item maint. now
+
+FIXED - Lots of minor things along the way.  Generally cleaning up code to make for flexible and efficient development and improved load times.
+
+NEW - Clickable UPCs in reports brings up modal iframe for "instant" item mgmt.!!  Not using AJAX for this (yet) so updates will only appear in the report after clicking refresh.
+
+NEW - Added a row of filters under the column headers to allow for fast report result filtering.  The text filter fields on the reports accept boolean operators like AND and OR.  Try it out.
+
+NEW - jQuery custom theme integrated for better UI consistency on elements called using jQuery (e.g. datepicker, modal iframe) 
+
+

@@ -1,15 +1,15 @@
 <?php
 // DB Connection Details
-DEFINE('DB_USER', 'root');
-DEFINE('DB_PASS', 'eng@ge');
+DEFINE('DB_USER', '');
+DEFINE('DB_PASS', '');
 DEFINE('DB_HOST', 'localhost');
 DEFINE('DB_NAME', 'is4c_log');
 
 $db_slave = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME) or DIE('Could not connect to DB.');
 
 DEFINE('FTP_SERVER', 'ftp.spins.com');
-DEFINE('FTP_USER', 'pfc_prt');
-DEFINE('FTP_PASS', 'pfcp540*');
+DEFINE('FTP_USER', '');
+DEFINE('FTP_PASS', '');
 
 /////////  O P T I O N S 	//////////////////
 //	Pick a year

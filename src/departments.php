@@ -1,5 +1,5 @@
 <?php
-require_once('mysql_connect.php');
+require_once('../define.conf');
 
 $query = "SELECT * FROM departments WHERE dept_discount <> 0";
 $result = mysql_query($query);

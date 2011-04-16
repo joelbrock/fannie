@@ -20,7 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-require_once('../src/mysql_connect.php');
+require_once('../define.conf');
 // include_once("../define.conf");
 // echo "HELLO??!";
 // echo DB_NAME;

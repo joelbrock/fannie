@@ -1,5 +1,5 @@
 <?php
-require_once('mysql_connect.php');
+require_once('../define.conf');
 
 $query = "SELECT * FROM item_properties";
 $result = mysql_query($query);

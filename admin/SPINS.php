@@ -1,5 +1,5 @@
 <?php
-require_once("../src/mysql_connect.php");
+require_once("../define.conf");
 
 /////////  O P T I O N S 	//////////////////
 //	Pick a year	

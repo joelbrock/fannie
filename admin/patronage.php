@@ -244,7 +244,7 @@ if (isset($_POST['submit']) && $_POST['check'] != TRUE) {
 
 	// debug_p($_REQUEST, "all the data coming in");
 
-	include("../src/footer.html");
+	include("../src/footer.php");
 	
 } else {
 
