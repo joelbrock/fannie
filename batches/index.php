@@ -23,20 +23,20 @@
 
 $page_title = 'Fannie - Batch Module';
 $header = 'Item Batcher';
-include('../src/header.html');
+include('../src/header.php');
 
 $_SESSION['batchID'] = 1;
 
-include_once('../src/mysql_connect.php');
+// include_once('../define.conf');
 
 $batchListQ= "SELECT active,batchID,batchName,batchType,DATE(startDate) as startDate,endDate 
 	FROM batches
 	ORDER BY batchID DESC";
 
-$batchListR = mysql_query($batchListQ);
+$batchListR = mysql_query($batchListQ) OR die(mysql_error() . "<br />" . $batchListQ);
 
 $maxBatchQ = "SELECT max(batchID) FROM batches";
-$maxBatchR = mysql_query($maxBatchQ);
+$maxBatchR = mysql_query($maxBatchQ) OR die(mysql_error() . "<br />" . $maxBatchQ);
 $maxBatchW = mysql_fetch_row($maxBatchR);
 $newBatch = $maxBatchW[0] + 1;
 // $newBatchID = $newBatch; 
@@ -53,7 +53,7 @@ echo '</form>';
 
 ?>
 
-<form name='addBatch' action='display.php?batchID=<? echo $newBatch; ?>' method='POST' target=_blank>
+<form name='addBatch' action='display.php?batchID=<?php echo $newBatch; ?>' method='POST' target=_blank>
 	<table>
 		<tr>
 			<td>&nbsp;</td>
@@ -64,20 +64,19 @@ echo '</form>';
 		<tr>
 			<td>&nbsp;
 				<select name=batchType>
-		        	<option value=1>CAP Sale</option>
-		        	<option value=1>Regular Sale</option>
-		        	<option value=1>Price Change</option>
+		        	<option value=2>Regular Sale</option>
+		        	<option value=3>Price Change</option>
 				</select>
 			</td>
 			<td><input type=text name=batchName></td>
-	     	<td><input name="startDate" onfocus="showCalendarControl(this);" type="text" size=10></td>
-	     	<td><input name="endDate" onfocus="showCalendarControl(this);" type="text" size=10></td>
+			<td><div class="date"><p><input type="text" name="startDate" class="datepicker" size="10" /></p></div></td>
+			<td><div class="date"><p><input type="text" name="endDate" class="datepicker" size="10" /></p></div></td>
 	     	<td><input type=submit name=submit value=Add></td>
 		</tr>
 	</table>
 </form>
 
-<?
+<?php
 
 // echo "<p><b>ADD BATCH FEATURE IS DOWN FOR SERVICE.  Check back soon!</b></p>";
 echo "<table border=0 cellspacing=0 cellpadding=5 width=90%>";
@@ -111,6 +110,9 @@ while($batchListW = mysql_fetch_array($batchListR)){
 			case '3':
 				echo "change";
 				break;
+			case '4':
+				echo "local";
+				break;
 		}
 	   	echo "</td><td>" . $batchListW['startDate'] . "</td>";
 	   	echo "<td>" . $batchListW['endDate'] . "</td>";
@@ -139,6 +141,9 @@ while($batchListW = mysql_fetch_array($batchListR)){
 			case '3':
 				echo "change";
 				break;
+			case '4':
+				echo "local";
+				break;
 		}
 	   	echo "</td><td>" . $batchListW['startDate'] . "</td>";
 	   	echo "<td>" . $batchListW['endDate'] . "</td>";
@@ -146,6 +151,13 @@ while($batchListW = mysql_fetch_array($batchListR)){
 	}
 }
 echo "</table>";
-include('../src/footer.html');
+include('../src/footer.php');
 
 ?>
+<script>
+	$(function() {
+		$( ".datepicker" ).datepicker({ 
+			dateFormat: 'yy-mm-dd' 
+		});
+	});
+</script>

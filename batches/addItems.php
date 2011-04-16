@@ -28,9 +28,9 @@
 <link rel="stylesheet" href="../src/style.css" type="text/css" />
 </head>
 <body>
-<?
+<?php
 // include_once($_SERVER["DOCUMENT_ROOT"].'/src/funct1Mem.php');
-require_once('../src/mysql_connect.php');
+require_once('../define.conf');
 
 foreach ($_POST AS $key => $value) {
     $$key = $value;
@@ -38,7 +38,7 @@ foreach ($_POST AS $key => $value) {
 }
 // 
 // $db = mysql_connect('localhost',$_SESSION["mUser"],$_SESSION["mPass"]);
-// mysql_select_db('is4c_op',$db);
+// mysql_select_db('DB_NAME',$db);
 
 $maxBatchIDQ = "SELECT MAX(batchID) FROM batches";
 $maxBatchIDR = mysql_query($maxBatchIDQ);
@@ -54,6 +54,7 @@ $batchInfoW = mysql_fetch_row($batchInfoR);
 if(isset($_GET['batchID'])){
    $batchID = $_GET['batchID'];
 }
+	// echo $batchID;
 if(isset($_GET['submit'])){
    $upc = $upc =str_pad($_GET['upc'],13,0,STR_PAD_LEFT);
    $salePrice = $_GET['saleprice'];
@@ -64,7 +65,7 @@ if(isset($_GET['submit'])){
 ?>   <script language="javascript">
     parent.frames[1].location.reload();
     </script>
-<?
+<?php
 } else {
 	$upc = '0';
 	$salePrice = '';
@@ -110,12 +111,12 @@ if($del == 1){
       if($selBListN == 0){
 		$insBItemQ = "INSERT INTO batchList(upc,batchID,salePrice,active)
 			VALUES('$upc',$batchID,$salePrice,$batch_active)";
-		echo $insBItemQ;
+		// echo $insBItemQ;
 		$insBItemR = mysql_query($insBItemQ);
 		
 		// echo "<h1>" . $batchInfoW[6] . "</h1>";
 		if ($upc != 0 && $batch_active == 1) {
-			$prodUpdateQ = "UPDATE products AS p, batches AS b, batchList AS l 
+			$prodUpdateQ = "UPDATE " . PRODUCTS_TBL . " AS p, batches AS b, batchList AS l 
 				SET p.special_price = $salePrice, p.start_date = b.startDate, p.end_date = b.endDate, p.discounttype = b.discounttype 
 				WHERE l.upc = p.upc AND b.batchID = l.batchID AND b.batchID = $batchID AND p.upc = $upc";
 			// echo $prodUpdateQ;
@@ -128,7 +129,7 @@ if($del == 1){
 		//echo $upBItemQ;
         $upBItemR = mysql_query($upBItemQ);
 		if ($upc != 0 && $batch_active == 1) {
-			$prodUpdateQ = "UPDATE products AS p, batches AS b, batchList AS l 
+			$prodUpdateQ = "UPDATE " . PRODUCTS_TBL . " AS p, batches AS b, batchList AS l 
 				SET p.special_price = $salePrice, p.start_date = b.startDate, p.end_date = b.endDate, p.discounttype = b.discounttype
 				WHERE l.upc = p.upc AND b.batchID = l.batchID AND b.batchID = $batchID AND p.upc = $upc";
 			$prodUpdateR = mysql_query($prodUpdateQ) OR DIE ("<div id=alert><p>ERROR!</p><br />" . mysql_error() . "</div>");
@@ -136,16 +137,6 @@ if($del == 1){
 		}
 	}
 }
-
-// PHP INPUT DEBUG SCRIPT  -- very helpful!
-//
-
-function debug_p($var, $title) 
-{
-    print "<p>$title</p><pre>";
-    print_r($var);
-    print "</pre>";
-}  
 
 // debug_p($_REQUEST, "all the data coming in");
 ?>

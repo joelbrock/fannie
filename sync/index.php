@@ -22,15 +22,30 @@
 *********************************************************************************/
 $page_title='Fannie - Lane Synchronization';
 $header='Lane Sync';
-include('../src/header.html');
+include('../src/header.php');
 
+$string="";
+$fileCount=0;
+$filePath='../sync/';
+$dir = opendir($filePath); 
+while ($file = readdir($dir)) { 
+	if (eregi("reload",$file)) { 
+    	$substr = ucwords(substr($file,6,-4));
+		$string .= "<h3><a href='$file'>$substr</a></h3>\n";
+		$fileCount++;
+	}
+}
+if ($fileCount > 0) {
+  echo sprintf("<b>Which data would you like to send to the lanes?:</b>\n<br />%s",$string);
+}
 
-echo '<p><a href="reloadproducts.php"><font size=4>Sync products</font></a></p>
-	<p><a href="reloadcustdata.php"><font size=4>Sync customer records</font></a></p>
-	<p><a href="reloademployees.php"><font size=4>Sync employee records</font></a></p>
-	<p><a href="reloaddepartments.php"><font size=4>Sync departments</font></a></p>
-	<p><a href="reloadsubdepts.php"><font size=4>Sync subdepartments</font></a></p>
-	<p><a href="reloadtenders.php"><font size=4>Sync tenders</font></a></p>';
+// 
+// echo '<p><a href="reloadproducts.php"><font size=4>Sync products</font></a></p>
+// 	<p><a href="reloadcustdata.php"><font size=4>Sync customer records</font></a></p>
+// 	<p><a href="reloademployees.php"><font size=4>Sync employee records</font></a></p>
+// 	<p><a href="reloaddepartments.php"><font size=4>Sync departments</font></a></p>
+// 	<p><a href="reloadsubdepts.php"><font size=4>Sync subdepartments</font></a></p>
+// 	<p><a href="reloadtenders.php"><font size=4>Sync tenders</font></a></p>';
 	
-include('../src/footer.html');
+include('../src/footer.php');
 ?>

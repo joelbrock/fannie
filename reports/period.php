@@ -28,8 +28,8 @@ if(isset($_GET['sort'])){
      header("Content-type: application/vnd.ms-excel; name='excel'");
   }
 }*/
-
-require_once('../src/mysql_connect.php');
+include('reportFunctions.php');
+require_once('../define.conf');
 require_once('../src/functions.php');
 // include('../src/datediff.php');
 
@@ -73,30 +73,31 @@ setlocale(LC_MONETARY, 'en_US');
 	}
 //	elseif ($year1 == date('Y')) { $table = 'dtransactions'; }
 	else { $table = 'dlog_' . $year1; }
-	
+
+//$table = 'dtransactions';	
+
 	$date2a = $date2 . " 23:59:59";
 	$date1a = $date1 . " 00:00:00";
 
-	include('reportFunctions.php');
 	$gross = gross($table,$date1,$date2);
+	$hash = hash_total($table,$date1,$date2);
+	$staff_total = staff_total($table,$date1,$date2);
+	$hoo_total = hoo_total($table,$date1,$date2);
+	$bene_total = bene_total($table,$date1,$date2);
+	$bod_total = bod_total($table,$date1,$date2);
+	$misc_total = miscDisc($table,$date1,$date2);
+	$tenDisc = tenDisc($table, $date1, $date2);
+	extract(MADcoupon($table,$date1,$date2));  			//  we use compact+extract here to return mult. values from function
+	extract(foodforall($table,$date1,$date2));			//  we use compact+extract here to return mult. values from function
+	extract(SSDdiscount($table,$date1,$date2));
+
+	$a = array($staff_total,$bene_total,$hoo_total,$bod_total,$MADcoupon, $foodforall, $SSDdiscount2, $misc_total, $tenDisc);
+	$totalDisc = array_sum($a);
 
 	if (isset($sales)) {
 
-		$hash = hash_total($table,$date1,$date2);
-
-
-		$staff_total = staff_total($table,$date1,$date2);
-		$hoo_total = hoo_total($table,$date1,$date2);
-		$bene_total = bene_total($table,$date1,$date2);
-		$bod_total = bod_total($table,$date1,$date2);
-		$MADcoupon = MADcoupon($table,$date1,$date2);
-		$foodforall = foodforall($table,$date1,$date2);
-
-		$a = array($staff_total,$bene_total,$hoo_total,$bod_total,$MADcoupon,$foodforall);
-		$totalDisc = array_sum($a);
-
 		$ICQ = "SELECT ROUND(SUM(total),2) AS coupons
-			FROM is4c_log.$table
+			FROM " . DB_LOGNAME . ".$table
 			WHERE datetime >= '$date1a' AND datetime <= '$date2a'
 			AND trans_subtype IN('IC')
 			AND trans_status <> 'X'
@@ -110,9 +111,9 @@ setlocale(LC_MONETARY, 'en_US');
 			}
 
 		$MCQ = "SELECT ROUND(SUM(total),2) AS coupons
-			FROM is4c_log.$table
+			FROM " . DB_LOGNAME . ".$table
 			WHERE datetime >= '$date1a' AND datetime <= '$date2a'
-			AND trans_subtype IN('MC')
+			AND trans_subtype IN ('MC', 'CP')
 			AND trans_status <> 'X'
 			AND emp_no <> 9999";
 
@@ -124,7 +125,7 @@ setlocale(LC_MONETARY, 'en_US');
 			}
 
 		$TCQ = "SELECT ROUND(SUM(total),2) AS coupons
-			FROM is4c_log.$table
+			FROM " . DB_LOGNAME . ".$table
 			WHERE datetime >= '$date1a' AND datetime <= '$date2a'
 			AND trans_subtype IN('TC')
 			AND trans_status <> 'X'
@@ -138,9 +139,22 @@ setlocale(LC_MONETARY, 'en_US');
 			}
 
 		$coupons = $IC + $MC + $TC;
+		
+		// Patronage totals
+		$pt_totalQ = "SELECT SUM(total)
+			FROM " . DB_LOGNAME . ".$table
+			WHERE DATE(datetime) BETWEEN '$date1' AND '$date2'
+			AND trans_subtype = 'PT'
+			AND emp_no <> 9999
+			AND voided <> 55
+			AND trans_status <> 'X'";
+		$pt_totalR = mysql_query($pt_totalQ);
+		list($pt_total) = mysql_fetch_row($pt_totalR);
+
+		$pt_total = (is_null($pt_total) ? 0 : $pt_total);
 
 		$strchgQ = "SELECT ROUND(SUM(d.total),2) AS strchg
-			FROM is4c_log.$table AS d
+			FROM " . DB_LOGNAME . ".$table AS d
 			WHERE d.datetime >= '$date1a' AND d.datetime <= '$date2a'
 			AND d.trans_subtype IN('MI')
 			AND d.trans_status <> 'X'
@@ -154,7 +168,7 @@ setlocale(LC_MONETARY, 'en_US');
 			}
 
 		$RAQ = "SELECT ROUND(SUM(d.total),2) as RAs
-			FROM is4c_log.$table AS d
+			FROM " . DB_LOGNAME . ".$table AS d
 			WHERE d.datetime >= '$date1a' AND d.datetime <= '$date2a'
 			AND d.department IN(45)
 			AND d.trans_status <> 'X'
@@ -168,9 +182,9 @@ setlocale(LC_MONETARY, 'en_US');
 			}
 		//	Other = Chrg Payments + Market EBT	
 		$otherQ = "SELECT ROUND(SUM(d.total),2) as other
-			FROM is4c_log.$table AS d
+			FROM " . DB_LOGNAME . ".$table AS d
 			WHERE d.datetime >= '$date1a' AND d.datetime <= '$date2a'
-			AND d.department IN(35,37)
+			AND d.department IN(33,35,37)
 			AND d.trans_status <> 'X'
 			AND d.emp_no <> 9999";
 
@@ -181,16 +195,16 @@ setlocale(LC_MONETARY, 'en_US');
 				$other = 0;
 			}
 
-		$net = $gross + $hash + $totalDisc + $coupons + $strchg + $RA;
+		$net = $gross + $hash + $totalDisc + $coupons + $strchg + $RA + $pt_total + $other;
 
 
 		 // sales of inventory departments
 		$invtotalsQ = "SELECT d.department,t.dept_name,ROUND(sum(d.total),2) AS total,ROUND((SUM(d.total)/$gross)*100,2) as pct
-			FROM is4c_log.$table AS d, is4c_op.departments AS t
+			FROM " . DB_LOGNAME . ".$table AS d, " . DB_NAME . ".departments AS t
 			WHERE d.department = t.dept_no
 			AND date(d.datetime) >= '$date1' AND date(d.datetime) <= '$date2' 
 			AND d.department <= 15 AND d.department <> 0
-			AND d.trans_subtype NOT IN('IC','MC')
+			AND d.trans_subtype NOT IN('IC','MC', 'CP')
 			AND d.trans_status <> 'X'
 			AND d.emp_no <> 9999
 			GROUP BY d.department, t.dept_name";
@@ -199,7 +213,7 @@ setlocale(LC_MONETARY, 'en_US');
 
 		// Sales for non-inventory departments 
 		$noninvtotalsQ = "SELECT d.department,t.dept_name,ROUND(sum(total),2) as total, count(d.datetime) AS count
-			FROM is4c_log.$table as d join is4c_op.departments as t ON d.department = t.dept_no
+			FROM " . DB_LOGNAME . ".$table as d join " . DB_NAME . ".departments as t ON d.department = t.dept_no
 			WHERE datetime >= '$date1a' AND datetime <= '$date2a' 
 			AND d.department > 35 AND d.department <> 0
 			AND d.trans_status <> 'X'
@@ -212,6 +226,7 @@ setlocale(LC_MONETARY, 'en_US');
 			<tr><td>totalDisc</td><td align=right>".money_format('%n',$totalDisc)."</td></tr>\n
 			<tr><td>coupon & gift cert. tenders</td><td align=right>".money_format('%n',$coupons)."</td></tr>\n
 			<tr><td>store charges</td><td align=right>".money_format('%n',$strchg)."</td></tr>\n
+			<tr><td>patronage refunds</td><td align=right>".money_format('%n',$pt_total)."</td></tr>\n
 			<tr><td>rcvd/accts</td><td align=right>".money_format('%n',$RA)."</td></tr>\n
 			<tr><td>mkt EBT & chg pmts</td><td align=right>".money_format('%n',$other)."</td></tr>\n
 			<tr><td>&nbsp;</td><td align=right>+___________</td></tr>\n
@@ -221,6 +236,9 @@ setlocale(LC_MONETARY, 'en_US');
 		echo '</b></td></tr></table><h4>Inventory Department Totals</h4>';
 		echo '<p>';
 		select_to_table($invtotalsQ,1,'FFFFFF');
+		deptTotals('Grocery',$gross,$table,$date1,$date2,'2,3,6,7,8,9','');
+		deptTotals('Produce',$gross,$table,$date1,$date2,'1,14,15','');
+		deptTotals('Nonfoods',$gross,$table,$date1,$date2,'4,5,10','');
 		echo '</p>';
 		echo '<h4>Non-Inventory Department Totals</h4>';
 		select_to_table($noninvtotalsQ,1,'FFFFFF');
@@ -230,7 +248,7 @@ setlocale(LC_MONETARY, 'en_US');
 		if ($gross == 0 || !$gross ) $gross = 1;
 
 		$tendertotalsQ = "SELECT t.TenderName as tender_type,ROUND(-sum(d.total),2) as total,ROUND((-SUM(d.total)/$gross)*100,2) as pct
-			FROM is4c_log.$table as d ,is4c_op.tenders as t 
+			FROM " . DB_LOGNAME . ".$table as d ," . DB_NAME . ".tenders as t 
 			WHERE d.datetime >= '$date1a' AND d.datetime <= '$date2a'
 			AND d.trans_status <> 'X' 
 			AND d.emp_no <> 9999
@@ -240,7 +258,7 @@ setlocale(LC_MONETARY, 'en_US');
 		// $gross = 0;
 	
 		$transcountQ = "SELECT COUNT(d.total) as transactionCount
-			FROM is4c_log.$table AS d
+			FROM " . DB_LOGNAME . ".$table AS d
 			WHERE d.datetime >= '$date1a' AND d.datetime <= '$date2a'
 			AND d.upc = 'DISCOUNT'
 			AND d.trans_status <> 'X'
@@ -265,21 +283,44 @@ setlocale(LC_MONETARY, 'en_US');
 	}		
 			
 	if(isset($discounts)) {
-		
-		echo "<h2>Membership & Discount Totals</h2>\n
-			<table border=0>\n<font size=2>\n<tr><td>staff total</td><td align=right>".money_format('%n',$staff_total)."</td></tr>\n
-			<tr><td>hoo total</td><td align=right>".money_format('%n',$hoo_total)."</td></tr>\n
-			<tr><td>benefits total</td><td align=right>".money_format('%n',$bene_total)."</td></tr>\n
-			<tr><td>bod total</td><td align=right>".money_format('%n',$bod_total)."</td></tr>\n
-			<tr><td>MAD coupon</td><td align=right>".money_format('%n',$MADcoupon)."</td></tr>\n
-			<tr><td>foodforall total</td><td align=right>".money_format('%n',$foodforall)."</td></tr>\n
-			<tr><td>&nbsp;</td><td align=right>+___________</td></tr>\n
-			<tr><td><b>total discount</td><td align=right>".money_format('%n',$totalDisc)."</b></td></tr></font>\n
-			</table>\n";
 		// 
+		// echo "<h2>Membership & Discount Totals</h2>\n
+		// 	<table border=0>\n<font size=2>\n<tr><td>staff total</td><td align=right>".money_format('%n',$staff_total)."</td></tr>\n
+		// 	<tr><td>hoo total</td><td align=right>".money_format('%n',$hoo_total)."</td></tr>\n
+		// 	<tr><td>benefits total</td><td align=right>".money_format('%n',$bene_total)."</td></tr>\n
+		// 	<tr><td>bod total</td><td align=right>".money_format('%n',$bod_total)."</td></tr>\n
+		// 	<tr><td>MAD coupon</td><td align=right>".money_format('%n',$MADcoupon)."</td></tr>\n
+		// 	<tr><td>foodforall total</td><td align=right>".money_format('%n',$foodforall)."</td></tr>\n
+		// 	<tr><td>&nbsp;</td><td align=right>+___________</td></tr>\n
+		// 	<tr><td><b>total discount</td><td align=right>".money_format('%n',$totalDisc)."</b></td></tr></font>\n
+		// 	</table>\n";
+		// 
+		echo '<h2>Membership & Discount Totals</h2><br>';
+		echo "<table border=0><font size=2>";
+		echo "<tr><td>staff total</td><td align=right>".money_format('%n',$staff_total)."</td></tr>";
+		echo "<tr><td>hoo total</td><td align=right>".money_format('%n',$hoo_total)."</td></tr>";
+		echo "<tr><td>benefits total</td><td align=right>".money_format('%n',$bene_total)."</td></tr>";
+		echo "<tr><td>bod total</td><td align=right>".money_format('%n',$bod_total)."</td></tr>";
+		echo "<tr><td>MAD coupon ($MAD_num)</td><td align=right>".money_format('%n',$MADcoupon)."</td></tr>";
+		echo "<tr><td>foodforall total ($ffa_num)</td><td align=right>".money_format('%n',$foodforall)."</td></tr>";
+		if (strtotime($date1) > strtotime($dbChangeDate) && strtotime($date2) > strtotime($dbChangeDate)) {
+			echo "<tr><td>Manual Member Discount</td><td align=right>".money_format('%n',$misc_total)."</td></tr>";
+		} else {
+			echo "<tr><td>Uncaught Discount/FFA</td><td align=right>".money_format('%n',$misc_total)."</td></tr>";
+		}
+		if ($tenDisc != 0) {
+				echo "<tr><td>10% on the 10th Discount</td><td align=right>".money_format('%n',$tenDisc)."</td></tr>";
+		}
+		if ($SSDD_num != 0) {
+			echo "<tr><td><i>SPECIAL</i> discount ($SSDD_num)</td><td align=right>".money_format('%n',$SSDdiscount2)."</td></tr>";
+		}
+		echo "<tr><td>&nbsp;</td><td align=right>+___________</td></tr>";
+		echo "<tr><td><b>total discount</td><td align=right>".money_format('%n',$totalDisc)."</b></td></tr></font></table>";
+		
+		
 		// // percentage breakdown
 		// $percentQ = "SELECT c.discount AS discount,ROUND(-SUM(d.total),2) AS totals 
-		// 			FROM is4c_log.$table AS d, is4c_op.custdata AS c 
+		// 			FROM " . DB_LOGNAME . ".$table AS d, " . DB_NAME . ".custdata AS c 
 		// 			WHERE d.card_no = c.CardNo 
 		// 			AND d.datetime >= '$date1a' AND d.datetime <= '$date2a' 	
 		// 			AND d.upc = 'DISCOUNT'
@@ -288,7 +329,7 @@ setlocale(LC_MONETARY, 'en_US');
 		// 			GROUP BY c.discount";
 		// 		
 		$percentQ = "SELECT percentDiscount AS percent, ROUND(SUM(total) * (percentDiscount / 100),2) as discount 
-			FROM is4c_log.$table
+			FROM " . DB_LOGNAME . ".$table
 			WHERE DATE(datetime) >= '$date1' AND DATE(datetime) <= '$date2'
 			AND percentDiscount <> 0 AND discountable = 1
 			AND trans_status <> 'X' AND emp_no <> 9999
@@ -299,8 +340,8 @@ setlocale(LC_MONETARY, 'en_US');
 
 		// // Discounts by member type;
 		$memtypeQ = "SELECT m.memDesc as memberType,ROUND(-SUM(d.total),2) AS discount 
-			FROM is4c_log.$table d INNER JOIN is4c_op.custdata c ON d.card_no = c.CardNo 
-			INNER JOIN is4c_op.memtype m ON c.memType = m.memtype
+			FROM " . DB_LOGNAME . ".$table d INNER JOIN " . DB_NAME . ".custdata c ON d.card_no = c.CardNo 
+			INNER JOIN " . DB_NAME . ".memtype m ON c.memType = m.memtype
 			WHERE d.datetime >= '$date1a' AND d.datetime <= '$date2a' 
 			AND d.upc = 'DISCOUNT'
 			AND d.trans_status <>'X'
@@ -312,7 +353,7 @@ setlocale(LC_MONETARY, 'en_US');
 	
 		// Sales by member type;
 		$memtypeQ = "SELECT m.memDesc as sales_by_memtype,(ROUND(SUM(d.total),2)) AS sales, ROUND((SUM(d.total)/$gross)*100,2) as pct
-			FROM is4c_log.$table d, memtype m
+			FROM " . DB_LOGNAME . ".$table d, memtype m
 			WHERE d.memtype = m.memtype
 			AND DATE(d.datetime) >= '$date1' AND DATE(d.datetime) <= '$date2' 
 			AND d.department < 20 AND d.department <> 0
@@ -327,7 +368,7 @@ setlocale(LC_MONETARY, 'en_US');
 	if(isset($equity)){	
 	
 		$sharetotalsQ = "SELECT d.datetime AS datetime, d.emp_no AS emp_no, d.card_no AS cardno,c.LastName AS lastname,ROUND(sum(total),2) as total 
-			FROM is4c_log.$table as d, is4c_op.custdata AS c
+			FROM " . DB_LOGNAME . ".$table as d, " . DB_NAME . ".custdata AS c
 			WHERE d.card_no = c.CardNo
 			AND d.datetime >= '$date1a' AND d.datetime <= '$date2a'
 			AND d.department = 36 
@@ -337,7 +378,7 @@ setlocale(LC_MONETARY, 'en_US');
 			ORDER BY d.datetime";
 
 		$sharetotalQ = "SELECT ROUND(SUM(d.total),2) AS Total_share_pmt
-			FROM is4c_log.$table AS d
+			FROM " . DB_LOGNAME . ".$table AS d
 			WHERE d.datetime >= '$date1a' AND d.datetime <= '$date2a'
 			AND d.department = 36
 			AND d.trans_status <> 'X'
@@ -348,7 +389,7 @@ setlocale(LC_MONETARY, 'en_US');
 		$sharetotal = $row[0];
 
 		$sharecountQ = "SELECT COUNT(d.total) AS peopleshareCount
-			FROM is4c_log.$table AS d
+			FROM " . DB_LOGNAME . ".$table AS d
 			WHERE d.datetime >= '$date1a' AND d.datetime <= '$date2a'
 			AND d.department = 36
 			AND d.trans_status <> 'X'
@@ -367,28 +408,13 @@ setlocale(LC_MONETARY, 'en_US');
 		
 	}
 
-//
-// PHP INPUT DEBUG SCRIPT  -- very helpful!
-//
-
-// function debug_p($var, $title) 
-// {
-//     print "<p>$title</p><pre>";
-//     print_r($var);
-//     print "</pre>";
-// }  
-// 
-// debug_p($_REQUEST, "all the data coming in");
-
 } else {
 	
 	$page_title = 'Fannie - Reporting';
 	$header = 'Period Report';
-	include('../src/header.html');
+	include('../src/header.php');
 	
-	echo '<script src="../src/CalendarControl.js" language="javascript"></script>
-		<form method="post" action="period.php" target="_blank">		
-		<h2>Period Report</h2>
+	echo '<form method="post" action="period.php" target="_blank">		
 		<table border="0" cellspacing="5" cellpadding="5">
 			<tr> 
 				<td>
@@ -396,8 +422,8 @@ setlocale(LC_MONETARY, 'en_US');
 			    	<p><b>End</b></p>
 			    </td>
 				<td>
-			    	<p><input type=text size=10 name=date1 onclick="showCalendarControl(this);"></p>
-	            	<p><input type=text size=10 name=date2 onclick="showCalendarControl(this);"></p>
+					<div class="date"><p><input type="text" name="date1" class="datepicker" />&nbsp;&nbsp;*</p></div>
+					<div class="date"><p><input type="text" name="date2" class="datepicker" />&nbsp;&nbsp;*</p></div>
 			    </td>
 			</tr>
 			<tr> 
@@ -426,8 +452,15 @@ setlocale(LC_MONETARY, 'en_US');
 		</table>
 	</form>';
 	
-	include('../src/footer.html');
+	include('../src/footer.php');
 }
 
 
 ?>
+<script>
+	$(function() {
+		$( ".datepicker" ).datepicker({ 
+			dateFormat: 'yy-mm-dd' 
+		});
+	});
+</script>

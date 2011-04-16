@@ -2,25 +2,13 @@
 include('../src/functions.php');
 $page_title = 'Fannie - Reports Module';
 $header = 'Item Movement Report';
-include ('../src/includes/header.html');
-// require_once ('../src/mysql_connect.php');
+include ('../src/header.php');
+// require_once ('../define.conf');
 if ((!isset($_POST['submit'])) && (!isset($_POST['upc'])) && (!isset($_GET['upc']))) {
-
-
-  echo '<script src="../src/CalendarControl.js" language="javascript"></script>
-    <SCRIPT LANGUAGE="JavaScript">
-      function putFocus(formInst, elementInst) {
-       if (document.forms.length > 0) {
-         document.forms[formInst].elements[elementInst].focus();
-       }
-      }
-    </script>';
-    
-
     
     echo '<BODY onLoad="putFocus(0,0);">
-  <form method="post" action="itemSales.php">		
-  <div id="box">
+  		<form method="post" action="itemSales.php">		
+  		<div id="box">
           <table border="0" cellspacing="3" cellpadding="3">
                   <tr>
                       <input name=upc type=text id=upc> Enter UPC/PLU or product name here<br /><br /><br /></tr>
@@ -30,8 +18,8 @@ if ((!isset($_POST['submit'])) && (!isset($_POST['upc'])) && (!isset($_GET['upc'
                           <p><b>End</b></p>
                           </td>
                           <td>			
-                                  <p><input type=text size=10 name=date1 onfocus="showCalendarControl(this);">&nbsp;&nbsp;*</p>
-                                  <p><input type=text size=10 name=date2 onfocus="showCalendarControl(this);">&nbsp;&nbsp;*</p>
+							<div class="date"><p><input type="text" name="date1" class="datepicker" />&nbsp;&nbsp;*</p></div>
+							<div class="date"><p><input type="text" name="date2" class="datepicker" />&nbsp;&nbsp;*</p></div>
                           </td>
                           <td colspan=2>
                                   &nbsp;
@@ -68,9 +56,9 @@ echo "<body>";
 if (isset($upc)) {
     if (is_numeric($upc)) {
 		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
-		$queryItem = "SELECT * FROM products WHERE upc = '$upc'";
+		$queryItem = "SELECT * FROM " . PRODUCTS_TBL . " WHERE upc = '$upc'";
 	} else {
-		$queryItem = "SELECT * FROM products WHERE description LIKE '%$upc%' ORDER BY description";
+		$queryItem = "SELECT * FROM " . PRODUCTS_TBL . " WHERE description LIKE '%$upc%' ORDER BY description";
 	}
 	
 	$resultItem = mysql_query($queryItem);
@@ -129,7 +117,7 @@ if (isset($upc)) {
 				SUM(t.quantity) AS Qty,
 				ROUND(SUM(t.total),2) AS Total,
 				p.scale as Scale
-				FROM is4c_log.$table t, is4c_op.products p, is4c_op.subdepts s, is4c_op.departments d
+				FROM " . DB_LOGNAME . ".$table t, " . DB_NAME . "." . PRODUCTS_TBL . " p, " . DB_NAME . ".subdepts s, " . DB_NAME . ".departments d
 				WHERE t.upc = p.upc AND s.subdept_no = p.subdept AND t.department = d.dept_no 
 				AND t.datetime BETWEEN '$date1a' AND '$date2a' 
 				AND t.emp_no <> 9999
@@ -148,7 +136,7 @@ if (isset($upc)) {
 				SUM(t.quantity) AS Qty,
 				ROUND(SUM(t.total),2) AS Total,
 				p.scale as Scale
-				FROM is4c_log.$table t, is4c_op.products p, is4c_op.subdepts s, is4c_op.departments d
+				FROM " . DB_LOGNAME . ".$table t, " . DB_NAME . "." . PRODUCTS_TBL . " p, " . DB_NAME . ".subdepts s, " . DB_NAME . ".departments d
 				WHERE t.upc = p.upc AND s.subdept_no = p.subdept AND t.department = d.dept_no 
 				AND t.datetime BETWEEN '$date1a' AND '$date2a' 
 				AND t.emp_no <> 9999
@@ -212,5 +200,13 @@ if (isset($upc)) {
 	}
 }
 
-include ('../src/includes/footer.html');
+include ('../src/footer.php');
 ?>
+
+<script>
+	$(function() {
+		$( ".datepicker" ).datepicker({ 
+			dateFormat: 'yy-mm-dd' 
+		});
+	});
+</script>

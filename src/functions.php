@@ -23,11 +23,82 @@
 
 require_once('mysql_connect.php');
 
+
+
+function escape_data ($data) {
+	
+	// Address Magic Quotes.
+	if (ini_get('magic_quotes_gpc')) {
+		$data = stripslashes($data);
+	}
+	
+	// Check for mysql_real_escape_string() support.
+	if (function_exists('mysql_real_escape_string')) {
+		global $dbc; // Need the connection.
+		$data = mysql_real_escape_string (trim($data), $dbc);
+	} else {
+		$data = mysql_escape_string (trim($data));
+	}
+	
+	return $data;
+}
+
+function clean($text)
+{
+	$text = strip_tags($text);
+	$text = htmlspecialchars($text, ENT_QUOTES);
+
+    return ($text); //output clean text
+}
+
+function acronymize($string) {
+	$words = explode(" ", $string);
+	$letters = "";
+	foreach ($words as $value) {
+	    $letters .= strtoupper(substr($value, 0, 1));
+	}
+	return $letters;
+}
+
+
+function bindecValues($decimal, $reverse=false, $inverse=false) {
+	// This function takes a decimal, converts it to binary and returns the
+	// decimal values of each individual binary value (a 1) in the binary string.
+    $bin = decbin($decimal);
+    if ($inverse) {
+        $bin = str_replace("0", "x", $bin);
+        $bin = str_replace("1", "0", $bin);
+        $bin = str_replace("x", "1", $bin);
+    }
+    $total = strlen($bin);
+    $stock = array();
+    for ($i = 0; $i < $total; $i++) {
+        if ($bin{$i} != 0) {
+            $bin_2 = str_pad($bin{$i}, $total - $i, 0);
+            array_push($stock, bindec($bin_2));
+        }
+    }
+    $reverse ? rsort($stock):sort($stock);
+    return implode("|", $stock);
+}
+
+
+//
+// PHP INPUT DEBUG SCRIPT  -- very helpful!
+//
+
+function debug_p($var, $title) 
+{
+    print "<p>$title</p><pre>";
+    print_r($var);
+    print "</pre>";
+}
+
 // -----------------------------------------------------------------
 
 
 // $db =mysql_connect('localhost',$_SESSION["mUser"],$_SESSION["mPass"]);
-// mysql_select_db('is4c_op',$db);
+// mysql_select_db('DB_NAME',$db);
 
 
 
@@ -353,9 +424,9 @@ function select_cols_to_table($query,$border,$bgcolor,$cols)
                                 echo "NULL";
                         }else{
                                  ?>
-                                 <a href="transaction.php?id=<? echo $row[5]; ?>">
-                                 <? echo $row[0]; ?></a>
-                        <? echo "</td>";
+                                 <a href="transaction.php?id=<?php echo $row[5]; ?>">
+                                 <?php echo $row[0]; ?></a>
+                        <?php echo "</td>";
                         }
                 for ($i=1;$i<$cols; $i++)
                 {
@@ -393,9 +464,9 @@ function select_to_table($query,$border,$bgcolor)
 				echo "NULL";
 			}else{
 				 ?>
-				 <a href="transaction.php?id=<? echo $row[5]; ?>">
-				 <? echo $row[0]; ?></a>
-			<? echo "</td>";
+				 <a href="transaction.php?id=<?php echo $row[5]; ?>">
+				 <?php echo $row[0]; ?></a>
+			<?php echo "</td>";
 			}
 		for ($i=1;$i<$number_cols-1; $i++)
 		{
@@ -446,9 +517,9 @@ function prodList_to_table($query,$border,$bgcolor,$upc)
                                 echo "NULL";
                         }else{
                                  ?>
-                                 <a href="productTestLike.php?upc=<? echo $row[0]; ?>">
-                                 <? echo $row[0]; ?></a>
-                        <? echo "</td>";
+                                 <a href="productTestLike.php?upc=<?php echo $row[0]; ?>">
+                                 <?php echo $row[0]; ?></a>
+                        <?php echo "</td>";
                         }
 		echo "<td width=250>";
 		if(!isset($row[1]))
@@ -500,9 +571,9 @@ function like_to_table($query,$border,$bgcolor)
                                 echo "NULL";
                         }else{
                                  ?>
-                                 <a href="productTestLike.php?upc=<? echo $row[0]; ?>">
-                                 <? echo $row[0]; ?></a>
-                        <? echo "</td>";
+                                 <a href="productTestLike.php?upc=<?php echo $row[0]; ?>">
+                                 <?php echo $row[0]; ?></a>
+                        <?php echo "</td>";
                         }
                 for ($i=1;$i<$number_cols-1; $i++)
                 {
@@ -519,7 +590,49 @@ function like_to_table($query,$border,$bgcolor)
 }
 
 
-
+function likedtotable($query,$border,$bgcolor) {
+	$results = mysql_query($query) or
+	        die("<li>errorno=".mysql_errno()
+	                ."<li>error=" .mysql_error()
+	                ."<li>query=".$query);
+	$number_cols = mysql_num_fields($results);
+	//display query
+	//echo "<b>query: $query</b>";
+	//layout table header
+	echo "<table border = $border bgcolor=$bgcolor>\n";
+	echo "<tr align left>\n";
+	/*for($i=0; $i<5; $i++)
+	{
+	        echo "<th>" . mysql_field_name($results,$i). "</th>\n";
+	}
+	echo "</tr>\n"; *///end table header
+	//layout table body
+	while($row = mysql_fetch_row($results))
+	{
+	        echo "<tr align=left>\n";
+	        echo "<td >";
+	                if(!isset($row[0]))
+	                {
+	                        echo "NULL";
+	                }else{
+	                         ?>
+	                         <a href="itemMaint.php?upc=<?php echo $row[0]; ?>">
+	                         <?php echo $row[0]; ?></a>
+	                <?php echo "</td>";
+	                }
+	        for ($i=1;$i<$number_cols-1; $i++)
+	        {
+	        echo "<td>";
+	                if(!isset($row[$i])) //test for null value
+	                {
+	                        echo "NULL";
+	                }else{
+	                        echo $row[$i];
+	                }
+	                echo "</td>\n";
+	        } echo "</tr>\n";
+	} echo "</table>\n";
+}
 
 function receipt_to_table($query,$query2,$border,$bgcolor)
 {
@@ -873,10 +986,10 @@ function like_coded_items($upc){
 
 function get_post_data($int){
     foreach ($_POST AS $key => $value) {
-    $$key = $value;
-    if($int == 1){
-        echo $key .": " .  $$key . "<br>";
-    }
+    	$$key = $value;
+    	if($int == 1){
+        	echo $key .": " .  $$key . "<br>";
+    	}
     }
 }
 

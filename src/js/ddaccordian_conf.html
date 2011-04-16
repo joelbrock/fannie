@@ -1,0 +1,50 @@
+<!-- <script type="text/javascript" src="../src/js/ddaccordion.js">
+
+/***********************************************
+* Accordion Content script- (c) Dynamic Drive DHTML code library (www.dynamicdrive.com)
+* Visit http://www.dynamicDrive.com for hundreds of DHTML scripts
+* This notice must stay intact for legal use
+***********************************************/
+
+</script>
+-->
+
+<style type="text/css">
+
+.acc_head{ /*header of 1st demo*/
+cursor: hand;
+cursor: pointer;
+padding: 2px 5px;
+border: 1px solid gray;
+background: white;
+margin-bottom: 0;
+}
+
+.open{ /*class added to contents of 1st panel when they are open*/
+background: #E1E1E1;
+}
+
+</style>
+
+<script type="text/javascript">
+
+ddaccordion.init({
+	headerclass: "acc_head", 				//Shared CSS class name of headers group
+	contentclass: "acc_content",			//Shared CSS class name of contents group
+	revealtype: "click",				 	//Reveal content when user clicks or onmouseover the header? Valid value: "click" or "mouseover"
+	collapseprev: false, 					//Collapse previous content (so only one open at any time)? true/false 
+	defaultexpanded: "all",		 			//index of content(s) open by default [index1, index2, etc]. [] denotes no content.
+	onemustopen: true, 			 			//Specify whether at least one header should be open always (so never all headers closed)
+	animatedefault: false, 					//Should contents open by default be animated into view?
+	persiststate: true, 					//persist state of opened contents within browser session?
+	toggleclass: ["open", "open"], 				//Two CSS classes to be applied to the header when it's collapsed and expanded, respectively ["class1", "class2"]
+	togglehtml: ["none", "", ""], 			//Additional HTML added to the header when it's collapsed and expanded, respectively  ["position", "html1", "html2"] (see docs)
+	animatespeed: "fast", 					//speed of animation: "fast", "normal", or "slow"
+	oninit:function(expandedindices){		//custom code to run when headers have initalized
+		//do nothing
+	},
+	onopenclose:function(header, index, state, isuseractivated){ //custom code to run whenever a header is opened or closed
+		//do nothing
+	}
+})
+</script>

@@ -1,4 +1,4 @@
-<?
+<?php
 /*******************************************************************************
 
     Copyright 2005 Whole Foods Community Co-op
@@ -24,7 +24,7 @@
 // $dbhost = 'localhost';
 // $dbuser = 'root';
 // $dbpass = '';
-// $dbdata = 'is4c_op';
+// $dbdata = 'DB_NAME';
 
 // $db = mysql_connect($dbhost,$dbuser,$dbpass);
 // mysql_select_db($dbdata,$db);
@@ -65,9 +65,9 @@ function select_cols_to_table($query,$border,$bgcolor,$cols)
                                 echo "NULL";
                         }else{
                                  ?>
-                                 <a href="transaction.php?id=<? echo $row[5]; ?>">
-                                 <? echo $row[0]; ?></a>
-                        <? echo "</td>";
+                                 <a href="transaction.php?id=<?php echo $row[5]; ?>">
+                                 <?php echo $row[0]; ?></a>
+                        <?php echo "</td>";
                         }
                 for ($i=1;$i<$cols; $i++)
                 {
@@ -105,9 +105,9 @@ function select_to_table($query,$border,$bgcolor)
 				echo "NULL";
 			}else{
 				 ?>
-				 <a href="transaction.php?id=<? echo $row[5]; ?>">
-				 <? echo $row[0]; ?></a>
-			<? echo "</td>";
+				 <a href="transaction.php?id=<?php echo $row[5]; ?>">
+				 <?php echo $row[0]; ?></a>
+			<?php echo "</td>";
 			}
 		for ($i=1;$i<$number_cols-1; $i++)
 		{
@@ -158,9 +158,9 @@ function prodList_to_table($query,$border,$bgcolor,$upc)
                                 echo "NULL";
                         }else{
                                  ?>
-                                 <a href="productTestLike.php?upc=<? echo $row[0]; ?>">
-                                 <? echo $row[0]; ?></a>
-                        <? echo "</td>";
+                                 <a href="productTestLike.php?upc=<?php echo $row[0]; ?>">
+                                 <?php echo $row[0]; ?></a>
+                        <?php echo "</td>";
                         }
 		echo "<td width=250>";
 		if(!isset($row[1]))
@@ -212,9 +212,9 @@ function like_to_table($query,$border,$bgcolor)
                                 echo "NULL";
                         }else{
                                  ?>
-                                 <a href="productTestLike.php?upc=<? echo $row[0]; ?>">
-                                 <? echo $row[0]; ?></a>
-                        <? echo "</td>";
+                                 <a href="productTestLike.php?upc=<?php echo $row[0]; ?>">
+                                 <?php echo $row[0]; ?></a>
+                        <?php echo "</td>";
                         }
                 for ($i=1;$i<$number_cols-1; $i++)
                 {

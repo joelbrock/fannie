@@ -21,10 +21,10 @@
 
 *********************************************************************************/
 include('prodFunction.php');
-include_once('../src/mysql_connect.php');
+include_once('../define.conf');
 $page_title = 'Fannie - Item Maintanence';
 $header = 'Item Maintanence';
-include('../src/header.html');
+include('../src/header.php');
 
 ?>
 <html>
@@ -49,7 +49,7 @@ include('../src/header.html');
 </head>
 <BODY onLoad='putFocus(0,0);'>
 
-<?
+<?php
 
 
 foreach ($_POST AS $key => $value) {
@@ -58,39 +58,51 @@ foreach ($_POST AS $key => $value) {
 
 
 $today = date("m-d-Y h:m:s");
-echo $today;
+// echo $today;
 
-if(!isset($tax)){
-	$tax = 0;
-}	
-if(!isset($FS)){
-	$FS = 0;
-}
 if(!isset($Scale)){
 	$Scale = 0;
 }
-if(!isset($deposit) || is_null($deposit)){
-	$deposit = 0;
+
+if(!isset($FS)){
+	$FS=0;
 }
+
+if(!isset($NoDisc)){
+	$NoDisc=1;
+}
+
+if(!isset($inUse)){
+	$inUse = 0;
+}
+
 if(!isset($QtyFrc)){
 	$QtyFrc = 0;
 }
 
-$del99Q = "DELETE FROM products where upc = '$upc'";
-$delISR = mysql_query($del99Q);
+if(!isset($deposit)){
+	$deposit = 0;
+}
 
-//echo $upc;
-//echo $descript;
-//echo $price;
+if(!isset($tax)){
+	$tax = 0;
+}
 
+if(!isset($prop)){
+	$prop = 0;
+} else {
+	$prop = array_sum($prop);
+}
 if (!$price) $price = 0;
 
-$query99 = "INSERT INTO products
-	VALUES($upc,'$descript',$price,0,0.00,0,0.00,0,0.00,0,'','',$department,'',$tax,$FS,$Scale,0,now(),0,0,1,0,'',0,$deposit,$QtyFrc,1,$subdepartment,'')";
-// echo "<br>" .$query99. "<br>";
-$resultI = mysql_query($query99,$dbc);
+$query99 = "INSERT INTO " . PRODUCTS_TBL . "
+	VALUES($upc,'$descript',$price,0,0.00,0,0.00,0,0.00,0,'','',$department,'',$tax,$FS,$Scale,0,now(),0,0,1,0,'',0,$deposit,$QtyFrc,1,$subdepartment,'');
+	INSERT INTO product_details 
+	VALUES('$vendor',0,0,$upc,0,'$cost','$descript',$department,'','')";
+echo "<br>" .$query99. "<br>";
+$resultI = mysql_query($query99);
 
-$prodQ = "SELECT * FROM products WHERE upc = ".$upc;
+$prodQ = "SELECT * FROM " . PRODUCTS_TBL . " WHERE upc = ".$upc;
 //echo $prodQ;
 $prodR = mysql_query($prodQ);
 $row = mysql_fetch_array($prodR);
@@ -156,19 +168,18 @@ $row = mysql_fetch_array($prodR);
 //
 //	PHP INPUT DEBUG SCRIPT -- very useful!
 //
-
-/*
-function debug_p($var, $title) 
-{
-    print "<h4>$title</h4><pre>";
-    print_r($var);
-    print "</pre>";
-}
+// 
+// function debug_p($var, $title) 
+// {
+//     print "<h4>$title</h4><pre>";
+//     print_r($var);
+//     print "</pre>";
+// }
 
 debug_p($_REQUEST, "all the data coming in");
-*/
 
-include('../src/footer.html');
+
+include('../src/footer.php');
 ?>
 
 

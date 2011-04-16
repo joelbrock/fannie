@@ -1,4 +1,4 @@
 <?
-header("Location: /item/itemMaint.php");
+header("Location: item/itemMaint.php");
 exit;
 ?>

@@ -9,6 +9,24 @@
 	margin: 0.75em;
 }
 
+h3.acc_head {
+	border:1px solid #555;
+	margin: 20px 0 0 0;
+	padding:7px;
+}
+
+.acc_box {
+	border: 1px;
+	border-top: 0px;
+	padding: 2em;
+	margin: 0.75em;
+	margin-top: 0; 
+	border-style: solid;
+}
+
+.acc_box th {
+	font-size:0.7em;
+}
 p {
 	font: "Arial,Lucida";
 	color:330066;
@@ -46,6 +64,70 @@ h4 {
 	font: "Arial,Lucida";
 	font-size: 1em;
 	font-weight: bolder;
+}
+#banner {
+	display: block;
+	background: red;
+	font-size:1.2em;
+	text-transform: uppercase;
+	letter-spacing: 8px;
+	font-family: monospace;
+	text-align:center;
+	font-weight: bold;
+	color: white;
+	padding:2px;
+	margin: 0 0 10px 0 !important;
+}
+
+.itemtag {
+	font-size: 0.70em;
+	color: #ffffff;
+	text-decoration: none;
+	padding:2px 4px 2px 4px;
+	background: #875d85;
+	border: 1px #999999;
+	border-radius: 3px;
+	margin: 0 4px 8px 0;
+	line-height:2em;
+}
+
+.itemtag a:hover {
+	background: #878ae8;
+	text-decoration: none;
+	color: #fff;
+}
+
+.proptoggle {
+/*	display: none;*/
+/*	max-width: 130px;*/
+}
+
+#filterbox {
+	background: #eee;
+	border: 1px #330066;
+	border-radius: 3px;
+	padding:10px;
+	width:auto;
+	display:block;
+	float:none;
+}
+#filterbox input {
+	margin: 6px;
+	
+}
+#outerdiv {
+	width:560px;
+	height:700px;
+/*	overflow:hidden;*/
+	position:relative;
+}
+
+#externalSite {
+	position:absolute;
+	top:-130px;
+	left:-460px;
+	width:1280px;
+	height:1200px;
 }
 
 /*								*/
@@ -231,12 +313,6 @@ td.pme-stats   { text-align: right;  }
   border: 1px solid #FFF;
 }
 
-/*
- *  INFINITE MENUS
- *
- */
-
-/* [imcss] *** Infinite Menus Core CSS  */
 
 .imcm ul,.imcm li,.imcm div,.imcm span,.imcm a{
 	text-align:left;vertical-align:top;padding:0px;margin:0;list-style:none outside none;
@@ -305,6 +381,7 @@ td.pme-stats   { text-align: right;  }
 }
 /*\*//*/.imcm .imclear,.imclear{font-size:1px;}/**/
 
+
 /* --[[ Main Container ]]-- */
 #imouter0 {
 	background-color:#FFFFFF;  
@@ -348,11 +425,34 @@ td.pme-stats   { text-align: right;  }
 
 	/* [active] */
 	#imenus0 ul li a.iactive {text-decoration:underline; }
-
+	
 /* --[[ description line ]]-- */
 #sub {
 	font-family:Arial;
 	font-size:12px;
 	cursor:default;
 	color:AAAAAA;
+}
+
+
+#livesearch {
+	float:right;
+	margin:10px 18px 0 0;
+}
+#jquery-live-search {
+	background: #fff;
+
+	padding: 5px 10px;
+	max-height: 400px;
+	overflow: auto;
+
+	position: absolute;
+	z-index: 99;
+
+	border: 1px solid #A9A9A9;
+	border-width: 0 1px 1px 1px;
+
+	-webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
+	-moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
+	box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
 }

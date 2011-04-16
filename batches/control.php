@@ -1,6 +1,6 @@
 <?php
 
-require_once('../src/mysql_connect.php');
+require_once('../define.conf');
 
 function batchReset($bid) {
 	
@@ -13,9 +13,9 @@ function batchReset($bid) {
 		$clause = "AND b.batchID = $bid";
 	}
 	
-	$query1 = "UPDATE is4c_op.products AS p,
-		is4c_op.batches AS b,
-		is4c_op.batchList AS l
+	$query1 = "UPDATE " . DB_NAME . "." . PRODUCTS_TBL . " AS p,
+		" . DB_NAME . ".batches AS b,
+		" . DB_NAME . ".batchList AS l
 		SET p.start_date = NULL,
 		p.end_date = NULL,
 		p.special_price = 0,
@@ -34,9 +34,9 @@ function batchReset($bid) {
 	} else {
 		echo "<p>Successfully reset batch #$bid.<br />";
 	
-		$query2 = "UPDATE is4c_op.products as p,
-			is4c_op.batches as b,
-			is4c_op.batchList as l
+		$query2 = "UPDATE " . DB_NAME . "." . PRODUCTS_TBL . " as p,
+			" . DB_NAME . ".batches as b,
+			" . DB_NAME . ".batchList as l
 			SET p.start_date = b.startDate,
 			p.end_date = b.endDate,
 			p.special_price = l.salePrice,

@@ -23,10 +23,9 @@
 // A page to search the member base.
 $page_title='Fannie - Member Management Module';
 $header='Find A Member';
-include('../src/header.html');
-include ('./includes/header.html');
-
-require_once('../src/mysql_connect.php');
+include('../src/functions.php');
+include('../src/header.php');
+require_once('../define.conf');
 
 if ((isset($_POST['submitted'])) || (isset($_GET['sort']))) { // If the form has been submitted or sort columns have been clicked, check the data and display the results.
 	
@@ -298,7 +297,7 @@ $query2 = "SELECT memtype, memDesc FROM memtype ORDER BY memtype ASC";
 $result = @mysql_query($query);
 $result2 = @mysql_query($query2);
 
-	
+	include './includes/header.html';
 	// Create the form.
 	echo '<h2>Find a Member.</h2>
 	<p>Select <b>one</b> of the below search options.</p>
@@ -331,5 +330,5 @@ $result2 = @mysql_query($query2);
 	</form>';
 
 mysql_close(); // Close the DB connection.
-include('../src/footer.html');
+include('../src/footer.php');
 ?>

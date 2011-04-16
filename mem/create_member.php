@@ -23,12 +23,12 @@
 // A page to create a member.
 $page_title='Fannie - Member Management Module';
 $header='Create A New Member';
-include('../src/header.html');
+include('../src/header.php');
 include ('./includes/header.html');
 
 // Check for a valid user ID, through GET or POST.
 
-require_once('../src/mysql_connect.php'); // Connect to the database.
+require_once('../define.conf'); // Connect to the database.
 
 if (isset($_POST['submitted'])) { // If the form has been submitted, check the data and create the record.
 	
@@ -246,5 +246,5 @@ $result5 = @mysql_query($query5);
 	<p class="error">This page has been accessed in error.</p><p><br /><br /></p>';
 }*/
 mysql_close(); // Close the DB connection.
-include('../src/footer.html');
+include('../src/footer.php');
 ?>

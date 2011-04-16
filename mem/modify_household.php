@@ -24,7 +24,8 @@
 // A page to view and edit a household's details.
 $page_title='Fannie - Member Management Module';
 $header='Edit An Account';
-include('../src/header.html');
+include('../src/header.php');
+include('../src/functions.php');
 include ('./includes/header.html');
 
 // Check for a valid user ID, through GET or POST.
@@ -44,7 +45,7 @@ if ( (isset($_GET['cardno'])) && (is_numeric($_GET['cardno'])) ) { // Accessed t
 	
 }
 
-require_once ('../src/mysql_connect.php'); // Connect to the database.
+require_once ('../define.conf'); // Connect to the database.
 
 if (isset($_POST['submitted'])) { // If the form has been submitted, check the new data and update the record.
 	
@@ -349,5 +350,5 @@ if (($num_rows == 2)) {  // Valid id show the form.
 mysql_close(); // Close the DB connection.
 
 include ('./includes/footer.html');
-include('../src/footer.html');
+include('../src/footer.php');
 ?>

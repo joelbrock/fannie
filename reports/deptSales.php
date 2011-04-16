@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include('../src/functions.php');
-require_once('../src/mysql_connect.php');
+require_once('../define.conf');
 
 // if(isset($_GET['sort'])){
 // 	if(isset($_GET['XL'])){
@@ -33,11 +33,14 @@ require_once('../src/mysql_connect.php');
 // }
 
 if (isset($_POST['submit'])) {
-	
-	echo "<html><head><title>Department Sales Movement</title>
-		<script type=\"text/javascript\" src=\"../src/tablesort.js\"></script>
-		<link rel='stylesheet' href='../src/style.css' type='text/css' />
-		<link rel='stylesheet' href='../src/tablesort.css' type='text/css' /></head>";
+	echo "<html><head><title>Department Sales Movement</title>";
+	include ('../src/head.php');
+	echo "<link rel=\"stylesheet\" href=\"" . SRCROOT . "/tablesort.css\" type=\"text/css\" />
+		<script>
+		$(document).ready(function() {
+			$('#output').tableFilter();
+		});
+		</script></head>";
 
 	foreach ($_POST AS $key => $value) {
 		$$key = $value;
@@ -46,7 +49,17 @@ if (isset($_POST['submit'])) {
 	echo "<BODY>";
 
 	$today = date("F d, Y");	
-
+	
+	// itemproperty searching - incomplete:  can be done using table filter now.
+	// if (isset($_POST['property'])) { 
+	// 	$propArray = implode(",",$_POST['property']); 
+	// } elseif (isset($_GET['property'])) { 
+	// 	$propArray = $_GET['property'];
+	// }
+	// echo $propArray;
+	// $itemProp = '';
+	//  end itemprop search
+	
 	if (isset($allDepts)) {
 		$deptArray = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,40";
 		$arrayName = "ALL DEPARTMENTS";
@@ -84,13 +97,14 @@ if (isset($_POST['submit'])) {
 
 	if (isset($salesTotal)) {
 		$query1 = "SELECT d.dept_name,ROUND(SUM(t.total),2) AS total
-			FROM is4c_op.departments AS d, is4c_log.$table AS t
+			FROM " . DB_NAME . ".departments AS d, " . DB_LOGNAME . ".$table AS t
 			WHERE d.dept_no = t.department
 			AND t.datetime >= '$date1a' AND t.datetime <= '$date2a'
 			AND t.department IN($deptArray)
 			AND t.trans_subtype NOT IN ('MC','IC')
 			AND t.trans_status <> 'X'
 			AND t.emp_no <> 9999
+			$itemProp
 			GROUP BY t.department";
 				
 		$result1 = mysql_query($query1);
@@ -117,13 +131,14 @@ if (isset($_POST['submit'])) {
 	if(isset($openRing)) {
 		//$query2 - Total open dept. ring
 		$query2 = "SELECT d.dept_name AS Department,ROUND(SUM(t.total),2) AS open_dept
-			FROM is4c_op.departments AS d,is4c_log.$table AS t 
+			FROM ". DB_NAME . ".departments AS d," . DB_LOGNAME . ".$table AS t 
 			WHERE d.dept_no = t.department
 			AND t.datetime >= '$date1a' AND t.datetime <= '$date2a' 
 			AND t.department IN($deptArray)
 			AND t.trans_type = 'D' 
 			AND t.trans_subtype NOT IN ('MC','IC')
 			AND t.emp_no <> 9999 AND t.trans_status <> 'X' 
+			$itemProp
 			GROUP BY t.department";
 
 		$result2 = mysql_query($query2);
@@ -151,21 +166,25 @@ if (isset($_POST['submit'])) {
 	if(isset($pluReport)){
 		// $query3 - Sales per PLU
 		$query3 = "SELECT DISTINCT 
-			p.upc AS PLU,
+			p.upc AS UPC,
 			p.description AS Description,
+			d.cost AS Cost,
 			t.unitPrice AS Price,
 			p.department AS Dept,
-			p.subdept AS Subdept,
+			s.subdept_name AS Subdept,
+			p.props AS Props,
 			SUM(t.quantity) AS Qty,
 			ROUND(SUM(t.total),2) AS Total,
 			p.scale as Scale
-			FROM is4c_log.$table t, is4c_op.products p
-			WHERE t.upc = p.upc
+			FROM " . DB_LOGNAME . ".$table t, " . PRODUCTS_TBL . " p, product_details d, subdepts s
+			WHERE t.upc = p.upc AND p.upc = d.upc
+			AND s.subdept_no = p.subdept
 			AND t.department IN($deptArray) 
 			AND t.datetime >= '$date1a' AND t.datetime <= '$date2a' 
 			AND t.emp_no <> 9999
 			AND t.trans_status <> 'X'
 			AND t.upc NOT LIKE '%DP%'
+			$itemProp
 			$inUseA
 			GROUP BY t.unitPrice,t.upc";
 	
@@ -185,26 +204,44 @@ if (isset($_POST['submit'])) {
 		    <tr>\n
 		      <th class=\"sortable-numeric\">UPC</th>\n
 		      <th class=\"sortable-text\">Description</th>\n
-			  <th class=\"sortable\">cost</th>\n
+			  <th class=\"sortable-currency\">cost</th>\n
 		      <th class=\"sortable-currency\">Price</th>\n
-			  <th class=\"sortable\">margin</th>\n
-		      <th class=\"sortable-numeric\">Dept.</th>\n
-		      <th class=\"sortable-numeric\">Subdept.</th>\n
+			  <th class=\"sortable\">margin%</th>\n
+		      <th filter-type='ddl' class=\"sortable-numeric\">Dept.</th>\n
+		      <th filter-type='ddl' class=\"sortable-numeric\">Subdept.</th>\n
+		      <th class=\"sortable-text\">Item Properties</th>\n
 		      <th class=\"sortable-numeric favour-reverse\">Qty.</th>\n
 		      <th class=\"sortable-currency favour-reverse\">SALES</th>\n
-		      <th class=\"sortable-text\">Scale</th>\n		
+		      <th filter-type='ddl' class=\"sortable-text\">Scale</th>\n		
 		    </tr>\n
 		  </thead>\n
 		  <tbody>\n";
 		
 		while ($row = mysql_fetch_array ($result3, MYSQL_ASSOC)) {
-			echo "<td align=center>" . $row["PLU"] . "</td>\n
+			//	GROSS MARGIN = ( ( C - P ) / P ) * 100
+			$margin = ($row['Cost']) ? -round(((($row['Cost'] - $row['Price']) / $row['Price']) * 100),2) : '';	
+			$mcolor = ($margin < 20) ? 'red' : (($margin > 40) ? 'green' : '');
+			$b = bindecValues($row["Props"]);
+			$prop_arr = explode("|", $b);
+			echo "<td align=center><a class='opener' href='../item/itemMaint.php?upc=" . $row["UPC"] . "'>" . $row["UPC"] . "</a></td>\n
 				<td align=left>" . $row["Description"] . "</td>\n
-				<td>&nbsp;</td>\n
+				<td align=right>" . $row['Cost'] . "</td>\n
 				<td align=right>" . money_format('%n',$row["Price"]) . "</td>\n
-				<td>&nbsp;</td>\n
+				<td align=right><font color=$mcolor>" . $margin . "</font></td>\n
 				<td align=left>" . $row["Dept"] . "</td>\n
 				<td align=left>" . $row["Subdept"] . "</td>\n
+				<td>";
+			if (!$row["Props"] || $row["Props"] == 0) {
+				echo "";
+			} else { 
+				// print_r($prop_arr);
+				foreach ($prop_arr as $i) {
+					$tagR = mysql_query("SELECT * FROM item_properties WHERE bit = $i");
+					$tag = mysql_fetch_assoc($tagR);
+					echo "<span><a class='itemtag' href='#' title='".$tag['name']."'>" . acronymize($tag['name']) . "</a></span>";
+				}
+			}
+			echo "</td>\n
 				<td align=right>" . number_format($row["Qty"],2) . "</td>\n
 				<td align=right>" . money_format('%n',$row["Total"]) . "</td>\n";
 				if($row["Scale"] == 1){
@@ -216,56 +253,43 @@ if (isset($_POST['submit'])) {
 		}
 	
 		echo "</table>\n";
-	
+		
 	}
 
-	// PHP INPUT DEBUG SCRIPT  -- very helpful!
-	//
 
-	// function debug_p($var, $title) 
-	// {
-	//     print "<p>$title</p><pre>";
-	//     print_r($var);
-	//     print "</pre>";
-	// }  
-	// 
 	// debug_p($_REQUEST, "all the data coming in");
 } else {
 
 $page_title = 'Fannie - Reporting';
 $header = 'Movement Report';
-include('../src/header.html');
-
-echo '<link href="../src/style.css" rel="stylesheet" type="text/css">
-<script src="../src/CalendarControl.js" language="javascript"></script>
+include('../src/header.php');
+?>
 
 <form method="post" action="deptSales.php" target="_blank">		
 
 <div id="box">
 	<table border="0" cellspacing="3" cellpadding="3">
 		<tr> 
-            <th align="center"> <p><b>Select dept.*</b></p></th>
+            <th><p><b>Select dept.*</b></p></th>
 		</tr>
 		<tr valign=top>';
-
+<?php
 include('../src/departments.php');
-
-echo '</tr>
+// include('../src/item_props.php');
+?>
+</tr>
 	</table>
 </div>
 <div id="box">
 	<table border="0" cellspacing="3" cellpadding="3">
 		<tr>
 			<td align="right">
-				<p><b>Date Start</b> </p>
-		    	<p><b>End</b></p>
+				<p><b>Date Start:</b></p>
+		    	<p><b>Date End:</b></p>
 			</td>
 			<td>			
-				<p><input type=text size=10 name=date1 onfocus="showCalendarControl(this);">&nbsp;&nbsp;*</p>
-				<p><input type=text size=10 name=date2 onfocus="showCalendarControl(this);">&nbsp;&nbsp;*</p>
-			</td>
-			<td colspan=2>
-				<p>Date format is YYYY-MM-DD</br>(e.g. 2004-04-01 = April 1, 2004)</p>
+				<div class="date"><p><input type="text" name="date1" class="datepicker" />&nbsp;&nbsp;*</p></div>
+				<div class="date"><p><input type="text" name="date2" class="datepicker" />&nbsp;&nbsp;*</p></div>
 			</td>
 		</tr>
 	</table>
@@ -300,9 +324,16 @@ echo '</tr>
 		</tr>
 	</table>
 </div>
-</form>';
+</form>
 
-include('../src/footer.html');
+<?php include('../src/footer.php'); 
+
 }
 ?>
-
+<script>
+	$(function() {
+		$( ".datepicker" ).datepicker({ 
+			dateFormat: 'yy-mm-dd' 
+		});
+	});
+</script>

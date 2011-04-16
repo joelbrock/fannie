@@ -23,9 +23,10 @@
 
 $header = 'Transaction Lookup';
 $page_title='Search Transaction History';
-include('../src/header.html');
+include('../src/header.php');
+include('../src/functions.php');
 
-echo '<HEAD><script src="../src/CalendarControl.js" language="javascript"></script>
+echo '<HEAD>
 	<SCRIPT TYPE="text/javascript">
 	<!--
 	function popup(mylink, windowname)
@@ -43,7 +44,7 @@ echo '<HEAD><script src="../src/CalendarControl.js" language="javascript"></scri
 	</SCRIPT>
 	</HEAD><BODY>';
 
-require_once('../src/mysql_connect.php');
+// require_once('../define.conf');
 
 if ((isset($_POST['submitted'])) || (isset($_GET['sort']))) { // If the form has been submitted or sort columns have been clicked, check the data and display the results.
 	/*
@@ -170,7 +171,7 @@ if ((isset($_POST['submitted'])) || (isset($_GET['sort']))) { // If the form has
                 
         if (empty($errors)) {
 		$sm = stripslashes($sm);
-		$query = "SELECT * FROM is4c_log.$transtable WHERE trans_type = 'C' AND " . $sm;
+		$query = "SELECT * FROM " . DB_LOGNAME . ".$transtable WHERE trans_type = 'C' AND " . $sm;
 		// echo "$query";
 		$result = @mysql_query($query);
 		
@@ -178,7 +179,7 @@ if ((isset($_POST['submitted'])) || (isset($_GET['sort']))) { // If the form has
 			echo '<div id="alert"><p class="error">Your search yielded no results.</p></div>';
 		} else { // Results!
 						
-			$query = "SELECT COUNT(*) FROM is4c_log.$transtable WHERE trans_type = 'C' AND $sm"; // Count the number of records.
+			$query = "SELECT COUNT(*) FROM " . DB_LOGNAME . ".$transtable WHERE trans_type = 'C' AND $sm"; // Count the number of records.
 			$result = @mysql_query($query); // Run the query.
 			$row = mysql_fetch_array($result, MYSQL_NUM); // Retrieve the query.
 			$num_records = $row[0]; // Store the results.
@@ -248,7 +249,7 @@ if ((isset($_POST['submitted'])) || (isset($_GET['sort']))) { // If the form has
 				CONCAT(emp_no,'-',register_no,'-',trans_no) AS daytrans_no,
 				card_no, 
 				unitPrice 
-				FROM is4c_log.$transtable 
+				FROM " . DB_LOGNAME . ".$transtable 
 				WHERE trans_type = 'C'
 				AND description LIKE 'Subtotal%'
 				AND $sm 
@@ -326,9 +327,10 @@ $result = @mysql_query($query);
 	echo '<h2>Search Transaction History.</h2>
 		<form action="trans_lookup.php" method="post">';
 	echo '<table cellpadding=5 border=0><tr><td>
-		<p>Date: </td><td><input type="text" name="date" size="11" maxlength="11"';
+		<p>Date: </td><td>
+		<div class="date"><input type="text" name="date" class="datepicker" size="10"';
 	if (isset($_POST['date'])) {echo ' value="' . $_POST['date'] . '"';} 
-	echo 'onclick="showCalendarControl(this);"> * Required</p></td></tr>';
+	echo ' />&nbsp;&nbsp;*</div></td></tr>';
 	echo '<tr><td><p><input type="checkbox" id="ti" name="ti" value="ti">';
 	echo 'Transaction ID: </input></td><td><input type="text" name="trans_id" size="15" maxlength="15" onfocus="document.getElementById(\'ti\').checked = \'checked\'"';
 	if (isset($_POST['daytrans_no'])) {echo ' value="' . $_POST['daytrans_no'] . '"';}
@@ -338,7 +340,7 @@ $result = @mysql_query($query);
 		<p><input type="checkbox" name="cn" id="cn" value="cn">Member Number: </input></td><td><input type="text" name="card_no" size="5" maxlength="5" onclick="document.getElementById(\'cn\').checked = \'checked\'"';
 	if (isset($_POST['card_no'])) {echo ' value="' . $_POST['card_no'] . '"';} 
 	echo ' /></td></tr><tr><td><p><input type="checkbox" name="em" id="em" value="em">Cashier: </input></td><td><select name="cashier" onclick="document.getElementById(\'em\').checked = \'checked\'">';
-	while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+	while ($row = mysql_fetch_assoc($result)) {
 		echo '<option value='. $row['emp_no'] . '>' . $row['FirstName'] . ' ' . substr($row['LastName'],0,1) . '.';
 	}
 	echo '</select></p></td></tr>
@@ -348,5 +350,12 @@ $result = @mysql_query($query);
 		</tr></table></form>';
 
 mysql_close(); // Close the DB connection.
-include('../src/footer.html');
+include('../src/footer.php');
 ?>
+<script>
+	$(function() {
+		$( ".datepicker" ).datepicker({ 
+			dateFormat: 'yy-mm-dd' 
+		});
+	});
+</script>

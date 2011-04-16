@@ -22,7 +22,7 @@
 *********************************************************************************/
 $page_title = 'Fannie - Admin Tools';
 $header = 'Admin Tools';
-include('../src/header.html');
+include('../src/header.php');
 ?>
 
 <a href="/mem/find_member.php"><font size=4>Membership Management</font></a></br>
@@ -31,10 +31,10 @@ include('../src/header.html');
 <a href="/admin/trans_lookup.php"><font size=4>Transaction Look-up</font></a></br>
 	Search transaction history and reprint receipts
 </br></br>
-<a href="/admin/patronage.php"><font size=4>Patronage Tool</font></a></br>
+<!--<a href="/admin/patronage.php"><font size=4>Patronage Tool</font></a></br>
 	Report on patronage refunds and enter check pmts.
 </br></br>
-
+-->
 <!--<a href="/admin/volunteers.php"><font size=4>Volunteer Hours</font></a></br>
 	Enter volunteer hours worked
 </br></br>
@@ -43,11 +43,11 @@ include('../src/header.html');
 </br></br>
 <a href="/admin/patronage.php"><font size=4>Patronage Pts. Calculator</font></a></br>
 	View patronage point totals and calculate refunds
-</br></br>
+</br></br>-->
 <a href="shelftags.php"><font size=4>Generate Shelftags</font></a><br>
 	Create and print shelftag batches
-</br>-->
+</br>
 </body>
-<?
-include('../src/footer.html');
+<?php
+include('../src/footer.php');
 ?>

@@ -1,5 +1,5 @@
 <?php
-
+require_once '../define.conf';
 if (isset($_POST['submitted'])) {
   /**
    * fpdf is the pdf creation class doc
@@ -170,31 +170,30 @@ if (isset($_POST['submitted'])) {
    * products.
    */
   
-  $data = 'is4c_op';
-  
-  $db = mysql_connect('localhost','root');
-  mysql_select_db($data,$db);
+    
+  // $db = mysql_connect(DB_HOST,DB_USER,DB_PASS);
+  // mysql_select_db(DB_NAME,$db);
   
   /** 
    * $testQ query creates select for barcode labels for items
    */ 
    
   
-  $testQ = "select if(u.brand IS NULL,'',substring(u.brand,1,12)) as brand,  
-                  if(u.sku IS NULL,'', u.sku) as sku,  
-                  if(u.size IS NULL,'',u.size) as size,  
-                  if(u.upc IS NULL,'',u.upc) as upc,  
-                  if(u.units IS NULL,'',u.units) as units,  
-                  if(u.cost IS NULL,'',u.cost) as cost,  
-                  if(p.description IS NULL, substring(u.description,1,23),substring(p.description,1,23)) as description,   
-                  right(p.upc,12) as pid,   
-                  if(u.upc IS NULL, 'Misc', 'UNFI') as vendor, 
-                  ROUND(normal_price,2) AS normal_price,
-                  p.scale AS scale
-          from is4c_op.products as p left outer join is4c_op.UNFI as u  on p.upc = u.upc  
-          WHERE p.department IN($dArray)  
-          AND date(modified) BETWEEN '$date1' AND '$date2'
-          ORDER BY department";
+$testQ = "SELECT if(u.brand IS NULL,'',substring(u.brand,1,12)) as brand,  
+		if(u.sku IS NULL,'', u.sku) as sku,  
+		if(u.size IS NULL,'',u.size) as size,  
+		if(u.upc IS NULL,'',u.upc) as upc,  
+		if(u.units IS NULL,'',u.units) as units,  
+		if(u.cost IS NULL,'',u.cost) as cost,  
+		if(p.description IS NULL, substring(u.description,1,23),substring(p.description,1,23)) as description,   
+		right(p.upc,12) as pid,   
+		if(u.upc IS NULL, 'Misc', 'UNFI') as vendor, 
+		ROUND(normal_price,2) AS normal_price,
+		p.scale AS scale
+	FROM " . PRODUCTS_TBL . " as p left outer join UNFI as u  on p.upc = u.upc  
+	WHERE p.department IN($dArray)  
+	AND date(modified) BETWEEN '$date1' AND '$date2'
+	ORDER BY department";
   
   
   $result = mysql_query($testQ);
@@ -348,7 +347,7 @@ if (isset($_POST['submitted'])) {
   
   $page_title = 'Fannie - Administration Module';
   $header = 'Shelftag Generator';
-  include ('../src/header.html');
+  include ('../src/header.php');
   echo '<link href="../style.css" rel="stylesheet" type="text/css" />
   <script src="../src/CalendarControl.js" language="javascript"></script>
   <script src="../src/putfocus.js" language="javascript"></script>
@@ -376,8 +375,8 @@ if (isset($_POST['submitted'])) {
           <p><b>End</b></p>
           </td>
           <td>			
-                  <p><input type=text size=10 name=date1 onfocus="showCalendarControl(this);">&nbsp;&nbsp;*</p>
-                  <p><input type=text size=10 name=date2 onfocus="showCalendarControl(this);">&nbsp;&nbsp;*</p>
+			<div class="date"><p><input type="text" name="date1" class="datepicker" />&nbsp;&nbsp;*</p></div>
+			<div class="date"><p><input type="text" name="date2" class="datepicker" />&nbsp;&nbsp;*</p></div>            
           </td>
           <td colspan=2>
                   <p>Date format is YYYY-MM-DD</br>(e.g. 2004-04-01 = April 1, 2004)</p>
@@ -392,8 +391,15 @@ if (isset($_POST['submitted'])) {
   </table>	
   </form>';
   
-  include('../src/footer.html');
+  include('../src/footer.php');
 }
 
 ?>
 
+<script>
+	$(function() {
+		$( ".datepicker" ).datepicker({ 
+			dateFormat: 'yy-mm-dd' 
+		});
+	});
+</script>

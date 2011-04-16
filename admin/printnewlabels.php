@@ -139,7 +139,7 @@ class PDF extends FPDF
  * products.
  */
 
-$data = 'is4c_op';
+$data = 'DB_NAME';
 
 $db = mysql_connect('localhost','root');
 mysql_select_db($data,$db);
@@ -151,7 +151,7 @@ mysql_select_db($data,$db);
  
 $dept = 2;
 
-$testQ = "select   if(u.brand IS NULL,'',substring(u.brand,1,12)) as brand,  if(u.sku IS NULL,'', u.sku) as sku,  if(u.size IS NULL,'',u.size) as size,  if(u.upc IS NULL,'',u.upc) as upc,  if(u.units IS NULL,'',u.units) as units,  if(u.cost IS NULL,'',u.cost) as cost,  if(u.description IS NULL, substring(p.description,1,23),substring(u.description,1,23)) as description,   right(p.upc,12) as pid,   if(u.upc IS NULL, 'Misc', 'UNFI') as vendor, normal_price  from is4c_op.products as p left outer join is4c_op.UNFI as u  on p.upc = u.upc  WHERE p.department IN(2,3,4,5,6,7,8,10,13) AND datediff(now(),p.modified) < 14 ORDER BY department";
+$testQ = "select   if(u.brand IS NULL,'',substring(u.brand,1,12)) as brand,  if(u.sku IS NULL,'', u.sku) as sku,  if(u.size IS NULL,'',u.size) as size,  if(u.upc IS NULL,'',u.upc) as upc,  if(u.units IS NULL,'',u.units) as units,  if(u.cost IS NULL,'',u.cost) as cost,  if(u.description IS NULL, substring(p.description,1,23),substring(u.description,1,23)) as description,   right(p.upc,12) as pid,   if(u.upc IS NULL, 'Misc', 'UNFI') as vendor, normal_price  from " . DB_NAME . "." . PRODUCTS_TBL . " as p left outer join " . DB_NAME . ".UNFI as u  on p.upc = u.upc  WHERE p.department IN(2,3,4,5,6,7,8,10,13) AND datediff(now(),p.modified) < 14 ORDER BY department";
 
 $result = mysql_query($testQ);
 if (!$result) {

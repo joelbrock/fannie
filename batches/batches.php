@@ -25,6 +25,7 @@
 
 <html>
 <head>
+<?php include ('../src/head.php'); ?>
 <link rel="stylesheet" href="../src/style.css" type="text/css" />
 <SCRIPT TYPE="text/javascript">
 <!--
@@ -43,8 +44,8 @@ return false;
 </SCRIPT>
 </head>
 <body>
-<?
-require_once('../src/mysql_connect.php');
+<?php
+require_once('../define.conf');
 
 if(isset($_GET['batchID'])){
 	$batchID = $_GET['batchID'];
@@ -61,7 +62,7 @@ if (isset($_POST['datechange'])){
 	foreach ($_POST AS $key => $value) {
 		$batchID = $_POST['batchID'];
      	//echo "values".$key . ": ".$value . "<br>";
-		$query = "SELECT * FROM is4c_op.batches WHERE batchID = $batchID";
+		$query = "SELECT * FROM " . DB_NAME . ".batches WHERE batchID = $batchID";
 		// echo $query;
 		$result = mysql_query($query);
 		$row = mysql_fetch_array($result);
@@ -85,7 +86,7 @@ if (isset($_POST['datechange'])){
 				$delItmQ = "DELETE FROM batchList WHERE upc = '$upc1' and batchID = $batchID";
 				$delItmR = mysql_query($delItmQ);
 				if ($active == 1) {
-					$prodUpdateQ = "UPDATE products AS p
+					$prodUpdateQ = "UPDATE " . PRODUCTS_TBL . " AS p
 						SET p.special_price = 0, p.start_date = 0, p.end_date = 0, p.discounttype = 0 
 						WHERE p.upc = $upc1";
 					$prodUpdateR = mysql_query($prodUpdateQ) OR DIE ("<div id=alert><p>ERROR!</p><br />" . mysql_error() . "</div>");
@@ -101,10 +102,13 @@ $batchInfoW = mysql_fetch_row($batchInfoR);
 
 
 $selBItemsQ = "SELECT b.*,p.*  from batchList as b LEFT JOIN 
-               products as p ON b.upc = p.upc WHERE batchID = $batchID 
+               " . PRODUCTS_TBL . " as p ON b.upc = p.upc WHERE batchID = $batchID 
                ORDER BY b.listID DESC";
 //echo $selBItemsQ;
 $selBItemsR = mysql_query($selBItemsQ);
+
+// uncomment to enable SALETAG printing from batches
+echo "<form action='saletags.php' method=POST target=_blank>\n<button name=tags type=submit>Generate Sale Tags!</button>\n<input type=hidden name=batchID value='" . $batchID . "'>\n</form>\n";
 
 echo "<form action=batches.php method=POST>";
 echo "<table border=0 cellspacing=0 cellpadding=5>";
@@ -126,7 +130,8 @@ while($selBItemsW = mysql_fetch_row($selBItemsR)){
 	echo "<tr bgcolor='$bg'>";
 	if(!$selBItemsW[6]) {
 		$_SESSION["popup"] = 1;
-		echo "<td align=center><a href='../item/itemMaint.php?upc=$selBItemsW[1]' onClick='return popup(this, \"addItem\")'>$selBItemsW[1]</a></td>";
+		// echo "<td align=center><a href='../item/itemMaint.php?upc=$selBItemsW[1]' onClick='return popup(this, \"addItem\")'>$selBItemsW[1]</a></td>";
+		echo "<td align=center><a class='opener' href='../item/itemMaint.php?upc=" . $selBItemsW[1] . "'>$selBItemsW[1]</a></td>";
 		echo "<td><font color=red>NO PRODUCT RECORD FOR THIS ITEM</font></td>";  
 	} else {
 		echo "<td align=center>$selBItemsW[1]</td><td>$selBItemsW[6]</td>";
@@ -141,17 +146,6 @@ echo "<tr><td><input type=submit name=submit value=submit></td>";
 // echo "<td><a href=resetBatch.php?batchID=$batchID target=blank>Reset Batch Now</a></td>";
 //echo "<td><a href='index.php target=blank>Return to batch list</a></td>";
 echo "</tr></form>";
-
-
-// PHP INPUT DEBUG SCRIPT  -- very helpful!
-//
-
-function debug_p($var, $title) 
-{
-    print "<p>$title</p><pre>";
-    print_r($var);
-    print "</pre>";
-}  
 
 // debug_p($_REQUEST, "all the data coming in");
 ?>

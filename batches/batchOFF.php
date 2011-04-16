@@ -22,14 +22,14 @@
 *********************************************************************************/
 $page_title = 'Fannie - Batch Module';
 $header = 'Item Batcher';
-include('../src/header.html');
-require_once('../src/mysql_connect.php');
+include('../src/header.php');
+require_once('../define.conf');
 
 $batchID = $_GET['batchID'];
 
-$resetQ="UPDATE is4c_op.products AS p,
-	is4c_op.batches AS b,
-	is4c_op.batchList AS l
+$resetQ="UPDATE " . DB_NAME . "." . PRODUCTS_TBL . " AS p,
+	" . DB_NAME . ".batches AS b,
+	" . DB_NAME . ".batchList AS l
 	SET p.start_date = NULL,
 	p.end_date = NULL,
 	p.special_price = 0,
@@ -47,5 +47,5 @@ echo "<p>Return to batch list:";
 echo "<form action=index.php method=post>";
 echo "<input type=submit name=back value=back></form></p>";
 
-include('../src/footer.html');
+include('../src/footer.php');
 ?>

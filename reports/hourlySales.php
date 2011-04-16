@@ -20,7 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-require_once('../src/mysql_connect.php');
+require_once('../define.conf');
 
 
 if(isset($_POST['submit'])){
@@ -90,7 +90,7 @@ if(isset($_POST['submit'])){
 	$num2 = 0;
 
 	$query1="SELECT date_format(datetime,'%H') AS hour,ROUND(sum(total),2) as Sales
-		FROM is4c_log.$table
+		FROM " . DB_LOGNAME . ".$table
 		WHERE date_format(datetime,'%W') = '$day'
 		AND datetime > '$date1a'
 		AND datetime < '$date2a'
@@ -102,7 +102,7 @@ if(isset($_POST['submit'])){
 		ORDER BY hour";
 
 	$query2="SELECT ROUND(sum(total),2) as TotalSales
-		FROM is4c_log.$table
+		FROM " . DB_LOGNAME . ".$table
 		WHERE datetime > '$date1a'
 		AND datetime < '$date2a'
 		AND date_format(datetime,'%W') = '$day'
@@ -112,7 +112,7 @@ if(isset($_POST['submit'])){
 		AND emp_no <> 9999";
 
 	$transCountQ = "SELECT date_format(datetime,'%H') AS hour,COUNT(total) as transactionCount
-		FROM is4c_log.$table
+		FROM " . DB_LOGNAME . ".$table
 		WHERE date_format(datetime,'%W') = '$day'
 		AND datetime > '$date1a'
 		AND datetime < '$date2a'
@@ -173,19 +173,16 @@ if(isset($_POST['submit'])){
 
 $page_title = 'Fannie - Reporting';
 $header = 'Hourly Sales Report';
-include('../src/header.html');	
+include('../src/header.php');	
 
-echo '<script src="../src/CalendarControl.js" language="javascript"></script>
-
-	<form method="post" action="hourlySales.php" target="_blank">	
+echo '<form method="post" action="hourlySales.php" target="_blank">	
 		<h2>Hourly Sales Report</h2>
-
 		<div id="box">	
 			<table border="0" cellspacing="5" cellpadding="5">
 				<tr>
 					<td><p>Date:</p></td>
-					<td><input type="text" size="10" name="date0" onclick="showCalendarControl(this);"></td>
-					<td>Pull hourly sales for any one date since 2007-01-04</td>
+					<td><div class="date"><p><input type="text" name="date0" class="datepicker" />&nbsp;&nbsp;*</p></div></td>
+					<td>Pull hourly sales for any one date</td>
 				</tr>
 			</table>
 		</div>
@@ -213,11 +210,9 @@ echo '<script src="../src/CalendarControl.js" language="javascript"></script>
 					<td><p>Saturday</p></td><td><input type="radio" name="day" value="Saturday"></td>
 				</tr>
 				<tr>
-					<td><p>Start Date:</p></td><td><input type=text size=10 name=date1 onfocus="showCalendarControl(this);"></td>
-		        </tr>
-				<tr>
-					<td><p>End Date:</p></td><td><input type=text size=10 name=date2 onfocus="showCalendarControl(this);"></td>
-				</tr>	
+					<td><div class="date"><p>Start Date:<input type="text" name="date1" class="datepicker" />&nbsp;&nbsp;*</p></div>
+					<div class="date"><p>End Date:<input type="text" name="date2" class="datepicker" />&nbsp;&nbsp;*</p></div></td>
+				</tr>
 				<tr>
 					<td> 
 						<input type=submit name=submit value="Submit"> 
@@ -229,6 +224,13 @@ echo '<script src="../src/CalendarControl.js" language="javascript"></script>
 			</table>
 		</div>
 	</form>';
-include('../src/footer.html');	
+include('../src/footer.php');	
 }
 ?>
+<script>
+	$(function() {
+		$( ".datepicker" ).datepicker({ 
+			dateFormat: 'yy-mm-dd' 
+		});
+	});
+</script>

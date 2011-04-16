@@ -10,7 +10,7 @@ if (!$year) {$year = date('Y');}
 //		## == enter a week tag number
 //		YY == output entire year (slow!)
 //		(leave blank for current output)
-$week_tag = "05";	
+$week_tag = "17";	
 //	format datetime	
 $timestamp = date('Y-m-d H:i:s');
 //	specify a log file to direct stdout
@@ -21,7 +21,7 @@ $SPINS = "SPINS_" . $year;
 $table = "dlog_" . $year;
 //	Directory to put .csv files into
 //	(make sure this already exists)	
-$outpath = "/pos/SPINS/exp/" . $year . "/";
+$outpath = "/pos/fannie/SPINS/" . $year . "/";
 //	filename prefix (incl _wk)
 $prefix = "pfcp_wk";	
 ///////////////////////////////////////////////

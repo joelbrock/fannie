@@ -1,12 +1,12 @@
-<?
+<?php
 // setlocale(LC_MONETARY, 'en_US');
 require('conf.php');
 
 //$db_date = '2007-03-19';
 // 
 // $db = mysql_connect('localhost','root','');
-// mysql_select_db('is4c_log',$db);
-// require_once('../src/mysql_connect.php');
+// mysql_select_db('" . DB_LOGNAME . "',$db);
+// require_once('../define.conf');
 // 
 // $db_date = $_SESSION['db_date'];
 // $table = $_SESSION['table'];
@@ -20,7 +20,7 @@ require('conf.php');
  */
 
 $grossQ = "SELECT ROUND(sum(total),2) as GROSS_sales
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE date(datetime) = '$db_date' 
 	AND department < 20
 	AND department <> 0
@@ -33,7 +33,7 @@ $grossQ = "SELECT ROUND(sum(total),2) as GROSS_sales
 	$gross = $row[0];
 
 $hashQ = "SELECT ROUND(sum(total),2) AS HASH_sales
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE date(datetime) = '$db_date'
 	AND department >= 34 AND department <= 44
 	AND trans_status <> 'X'
@@ -51,7 +51,7 @@ $hashQ = "SELECT ROUND(sum(total),2) AS HASH_sales
 //	Total Staff discount given less the needbased and MAD discount
 //
 // $staffQ = "SELECT (SUM(d.unitPrice)) AS staff_total
-// 	FROM is4c_log.$table AS d
+// 	FROM " . DB_LOGNAME . ".$table AS d
 // 	WHERE date(d.datetime) = '$db_date'
 // 	AND d.upc = 'DISCOUNT'
 // 	AND d.staff IN(1,2)
@@ -59,7 +59,7 @@ $hashQ = "SELECT ROUND(sum(total),2) AS HASH_sales
 // 	AND d.emp_no <> 9999";
 // 
 // $lessQ = "SELECT (SUM(d.unitPrice) * -1) AS TOT
-// 	FROM is4c_log.$table AS d 
+// 	FROM " . DB_LOGNAME . ".$table AS d 
 // 	WHERE date(d.datetime) = '$db_date'
 // 	AND d.staff IN(1,2)
 // 	AND d.voided IN(9,10)
@@ -88,7 +88,7 @@ $hashQ = "SELECT ROUND(sum(total),2) AS HASH_sales
 //	Calculate discounts by pct. -- test 2009-03-09
 	
 $staffQ = "SELECT (-SUM(total) * ($staff_discount / 100)) AS staff_total
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE date(datetime) = '$db_date'
 	AND department BETWEEN 1 AND 20
 	AND staff IN(1,2)
@@ -112,7 +112,7 @@ if (is_null($staff_total)) { $staff_total = 0;}
 //	BEGIN HOO_TOTAL
 //
 // $hoosQ = "SELECT SUM(d.unitPrice) AS hoos 
-// 	FROM is4c_log.$table AS d  
+// 	FROM " . DB_LOGNAME . ".$table AS d  
 // 	WHERE date(d.datetime) = '$db_date'
 // 	AND d.upc = 'DISCOUNT'
 // 	AND d.staff = 3
@@ -120,7 +120,7 @@ if (is_null($staff_total)) { $staff_total = 0;}
 // 	AND d.emp_no <> 9999";
 // 
 // $lessQ = "SELECT (SUM(d.unitPrice) * -1) AS TOT
-// 	FROM is4c_log.$table AS d 
+// 	FROM " . DB_LOGNAME . ".$table AS d 
 // 	WHERE date(d.datetime) = '$db_date'
 // 	AND d.staff = 3
 // 	AND d.voided IN(9,10)
@@ -154,7 +154,7 @@ if (is_null($staff_total)) { $staff_total = 0;}
 $hoo_total = 0;
 foreach($volunteer_discount AS $row) {
 	$wmQ = "SELECT (-SUM(total) * ($row / 100)) AS working_member
-		FROM is4c_log.$table
+		FROM " . DB_LOGNAME . ".$table
 		WHERE DATE(datetime) = '$db_date'
 		AND staff = 3
 		AND department BETWEEN 1 AND 20
@@ -173,7 +173,7 @@ foreach($volunteer_discount AS $row) {
 //	BEGIN BENE_TOTAL
 //
 // $benefitsQ = "SELECT (ROUND(SUM(d.unitPrice),2)) AS benefits_providers
-// 	FROM is4c_log.$table AS d 
+// 	FROM " . DB_LOGNAME . ".$table AS d 
 // 	WHERE date(d.datetime) = '$db_date'
 // 	AND d.upc = 'DISCOUNT' 
 // 	AND d.staff = 5
@@ -188,7 +188,7 @@ foreach($volunteer_discount AS $row) {
 // 	}
 // 
 // $lessQ = "SELECT (SUM(d.unitPrice) * -1) AS TOT
-// 	FROM is4c_log.$table AS d 
+// 	FROM " . DB_LOGNAME . ".$table AS d 
 // 	WHERE date(d.datetime) = '$db_date'
 // 	AND d.staff = 5
 // 	AND d.voided IN(9,10)
@@ -216,7 +216,7 @@ foreach($volunteer_discount AS $row) {
 $bene_total = 0;
 foreach($volunteer_discount AS $row) {
 	$beneQ = "SELECT (-SUM(total) * ($row / 100)) AS benefit_provider
-		FROM is4c_log.$table
+		FROM " . DB_LOGNAME . ".$table
 		WHERE DATE(datetime) = '$db_date'
 		AND staff = 5
 		AND department BETWEEN 1 AND 20
@@ -232,7 +232,7 @@ foreach($volunteer_discount AS $row) {
 //	BOD DISCOUNTS
 //
 // $bodQ = "SELECT (ROUND(SUM(d.unitPrice),2)) AS bod_discount
-// 	FROM is4c_log.$table AS d 
+// 	FROM " . DB_LOGNAME . ".$table AS d 
 // 	WHERE date(d.datetime) = '$db_date' 
 // 	AND d.upc = 'DISCOUNT'
 // 	AND d.staff = 4
@@ -247,7 +247,7 @@ foreach($volunteer_discount AS $row) {
 // 	}
 // 
 // $lessQ = "SELECT (SUM(d.unitPrice) * -1) AS TOT
-// 	FROM is4c_log.$table AS d 
+// 	FROM " . DB_LOGNAME . ".$table AS d 
 // 	WHERE date(d.datetime) = '$db_date'
 // 	AND d.staff = 4
 // 	AND d.voided IN(9,10)
@@ -271,7 +271,7 @@ foreach($volunteer_discount AS $row) {
 //	NEW bod discount -- 2009-03-09
 	
 $boardQ = "SELECT (-SUM(total) * ($board_discount / 100)) AS board_total
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE date(datetime) = '$db_date'
 	AND department BETWEEN 1 AND 20
 	AND staff IN(4)
@@ -292,7 +292,7 @@ if (is_null($bod_total)) { $bod_total = 0;}
 
 
 // $MADcouponQ = "SELECT ROUND(SUM(unitPrice),2) AS MAD_Coupon_total
-// 	FROM is4c_log.$table
+// 	FROM " . DB_LOGNAME . ".$table
 // 	WHERE date(datetime) = '$db_date' 
 // 	AND voided = 9
 // 	AND trans_status <> 'X'
@@ -308,7 +308,7 @@ if (is_null($bod_total)) { $bod_total = 0;}
 // 	NEW MAD coupon reporting format?.....  -- 2009-03-09
 
 $trans_IDQ = "SELECT CONCAT(emp_no,'_',register_no,'_',trans_no) AS trans_ID
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE DATE(datetime) = '$db_date'
 	AND voided = 9
 	AND trans_status NOT IN ('X','V')
@@ -323,7 +323,7 @@ while ($row = mysql_fetch_array($result)) {
 	$register_no = $n[1];
 	$trans_no = $n[2];
 	$query = "SELECT (-SUM(total) * ($MAD_discount / 100)) as MADdiscount
-		FROM is4c_log.$table
+		FROM " . DB_LOGNAME . ".$table
 		WHERE DATE(datetime) = '$db_date'
 		AND emp_no = $emp_no AND register_no = $register_no AND trans_no = $trans_no
 		AND department BETWEEN 1 AND 20";
@@ -336,7 +336,7 @@ while ($row = mysql_fetch_array($result)) {
 
 
 // $foodforallQ = "SELECT ROUND(SUM(unitPrice),2) AS FoodForAll_total
-// 	FROM is4c_log.$table
+// 	FROM " . DB_LOGNAME . ".$table
 // 	WHERE date(datetime) = '$db_date' 
 // 	AND voided = 10
 // 	AND trans_status <> 'X'
@@ -352,7 +352,7 @@ while ($row = mysql_fetch_array($result)) {
 //	NEW need-based-discount reporting calcs
 	
 $trans_IDQ = "SELECT CONCAT(emp_no,'_',register_no,'_',trans_no) AS trans_ID
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE DATE(datetime) = '$db_date'
 	AND voided = 10
 	AND trans_status NOT IN ('X','V')
@@ -367,7 +367,7 @@ while ($row = mysql_fetch_array($result)) {
 	$register_no = $n[1];
 	$trans_no = $n[2];
 	$query = "SELECT (-SUM(total) * ($need_based_discount / 100)) as NBDiscount
-		FROM is4c_log.$table
+		FROM " . DB_LOGNAME . ".$table
 		WHERE DATE(datetime) = '$db_date'
 		AND emp_no = $emp_no AND register_no = $register_no AND trans_no = $trans_no
 		AND department BETWEEN 1 AND 20";
@@ -383,7 +383,7 @@ while ($row = mysql_fetch_array($result)) {
 $totalDisc = $staff_total + $bene_total + $hoo_total + $bod_total + $MADcoupon + $foodforall;
 
 $ICQ = "SELECT ROUND(SUM(total),2) AS coupons
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE date(datetime) = '$db_date'
 	AND trans_subtype IN('IC')
 	AND trans_status <> 'X'
@@ -397,7 +397,7 @@ $ICQ = "SELECT ROUND(SUM(total),2) AS coupons
 	}
 
 $MCQ = "SELECT ROUND(SUM(total),2) AS coupons
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE date(datetime) = '$db_date'
 	AND trans_subtype IN('MC')
 	AND trans_status <> 'X'
@@ -411,7 +411,7 @@ $MCQ = "SELECT ROUND(SUM(total),2) AS coupons
 	}
 	
 $TCQ = "SELECT ROUND(SUM(total),2) AS coupons
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE date(datetime) = '$db_date'
 	AND trans_subtype IN('TC')
 	AND trans_status <> 'X'
@@ -427,7 +427,7 @@ $TCQ = "SELECT ROUND(SUM(total),2) AS coupons
 $coupons = $IC + $MC + $TC;
 
 $strchgQ = "SELECT ROUND(SUM(total),2) AS strchg
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE date(datetime) = '$db_date'
 	AND trans_subtype IN('MI')
 	AND trans_status <> 'X'
@@ -441,7 +441,7 @@ $strchgQ = "SELECT ROUND(SUM(total),2) AS strchg
 	}
 
 $RAQ = "SELECT ROUND(SUM(total),2) as RAs
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE date(datetime) = '$db_date'
 	AND department IN(45)
 	AND trans_status <> 'X'
@@ -461,7 +461,7 @@ $RAQ = "SELECT ROUND(SUM(total),2) as RAs
 $net = $gross + $hash + $totalDisc + $coupons + $strchg + $RA;
 
 $cashier_netQ = "SELECT -SUM(total) AS net
-	FROM is4c_log.$table
+	FROM " . DB_LOGNAME . ".$table
 	WHERE DATE(datetime) = '$db_date'
 	AND trans_subtype IN ('CA','CK','DC','CC','FS','EC')
 	AND emp_no <> 9999 AND trans_status <> 'X'";

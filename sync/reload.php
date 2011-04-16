@@ -20,186 +20,165 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
-include_once("../define.conf");
+require_once('../src/mysql_connect.php');
+// include_once("../define.conf");
+// echo "HELLO??!";
+// echo DB_NAME;
 
 function reloadtable($table) {
+	// require_once('../define.conf');
 
-$aLane = array(
-
-	LANE01,
-	LANE02,
-	LANE03,
-	LANE04,
-	LANE05,
-	LANE06,
-	LANE07,
-	LANE08,
-	LANE09,
-	LANE10,
-	LANE11,
-	LANE12
-
-
-);
-
-$_SESSION["mUser"] = "root";
-$_SESSION["laneUser"] = "root";
-
-$server = "localhost";
-$opDB = "is4c_op";
-$serveruser = $_SESSION["mUser"];
-$serverpass = $_SESSION["mPass"];
-
-$laneuser = $_SESSION["laneUser"];
-$lanepass = $_SESSION["lanePass"];
-
-$file = "/pos/is4c/download/".$table.".out";
-$dump = "select * into outfile '".$file."' from ".$table;
-$load = "load data infile '".$file."' into table is4c_op.".$table;
-
-$is4c_op_truncate = "truncate is4c_op.".$table;
-$opdata_truncate = "truncate opdata.".$table;
-$opdata_insert = "insert into opdata. ".$table." select * from is4c_op.".$table;
-
-echo "<font color='#004080' face=helvetica><b>".$table."</b></font>";
-echo "<p>";
-
-
-$continue = 0;
-
-/* establish connection to server */
-
-if ($s_conn = mysql_connect($server, $serveruser, $serverpass)) {
-	$continue = 1;
-}
-else {
-	echo "<p><font color='#800000' face=helvetica size=-1>Failed to connect to server</font>";
-}
-
-if ($continue == 1) {
-
-	$continue = 0;
-	if (mysql_select_db("is4c_op", $s_conn)) $continue = 1; 
-	else echo "<p><font color='#800000' face=helvetica size=-1>Failed to connect to server database</font>";
-}
-
-if ($continue == 1) {
-
-	$continue = 0;
-	$result = mysql_query("select count(*) from ".$table, $s_conn);
-	$row = mysql_fetch_array($result);
-	$server_num_rows = $row[0];
-	// echo "<p><font color='#004080' face=helvetica size=-1>There are ".$server_num_rows." record(s) on server database</font>";
-	if ($server_num_rows > 10) $continue = 1;
-	else echo "<p><font color='#800000' face=helvetica size=-1>There are only ".$server_num_rows." records on the server.<br>No way</font>";
-
-}
-/*
-if ($continue == 1) {
-
-	$continue = 0;
-	if (file_exists($file)) exec("rm ".$file);
-	if (mysql_query($dump, $s_conn)) $continue = 1;
-	else echo "<p><font color='#800000' face=helvetica size=-1>Failed to download new data from server</font>";
-
-}
-
-
-if ($continue == 1) {
-
-	$continue = 0;
-	if (file_exists($file)) $continue = 1;
-	else echo "<p><font color='#800000' face=helvetica size=-1>Failed to retrieve new data from server</font>";
-
-} 
-*/
-// synchronize lanes
-
-if ($continue == 1) {
-
-//	$continue = 0;
-//	echo "<p><font color='#004080' face=helvetica size=-1>".$server_num_rows." records downloaded from server</font>";
-//	echo "<p>";
 	
-	$i = 1;
-	foreach ($aLane as $lane) {
+	$aLane = array(
+		LANE01,
+		LANE02
+	);
 
-		if ($lane && strlen($lane) > 0) {
-		$lane_num = "lane ".$i;
-		$i++;
-		$lane_continue = 0;
-		if ($lane_conn = mysql_connect($lane, $laneuser, $lanepass)) $lane_continue = 1;
-		else echo "<br><font color='#800000' face=helvetica size=-1>Unable to connect to ".$lane_num."</font>";
+	// $_SESSION["mUser"] = "root";
+	// $_SESSION["laneUser"] = "root";
+	// 
+	// $server = "localhost";
+	// $opDB = "is4c_op";
+	// $serveruser = $_SESSION["mUser"];
+	// $serverpass = $_SESSION["mPass"];
+	// 
+	// $laneuser = $_SESSION["laneUser"];
+	// $lanepass = $_SESSION["lanePass"];
 
-		if ($lane_continue == 1) {
-			$lane_continue = 0;
-			if (mysql_select_db("opdata", $lane_conn)) $lane_continue = 1;
-			else echo "<br><font color='#800000' face=helvetica size=-1>Unable to select database on ".$lane_num."</font>";
-		}
+	// $file = "/pos/is4c/download/".$table.".out";
+	// 	$dump = "select * into outfile '".$file."' from ".$table;
+	// 	$load = "load data infile '".$file."' into table is4c_op.".$table;
 
-		if ($lane_continue == 1) {
-			$lane_continue = 0;
-			mysql_query($is4c_op_truncate, $lane_conn);
+	$is4c_op_truncate = "TRUNCATE " . DB_NAME . "." . $table;
+	$opdata_truncate = "TRUNCATE " . LANE_DB . "." . $table;
+	$opdata_insert = "INSERT INTO " . LANE_DB . "." . $table . " SELECT * FROM " . DB_NAME . "." . $table;
 
-			if (synctable($table,$serveruser,$opDB,$lane) == 1) {
+	echo "<font color='#004080' face=helvetica><b>".$table."</b></font>";
+	echo "<p>";
 
-				$result = mysql_query("select count(*) from is4c_op.".$table, $lane_conn);
-				$row = mysql_fetch_array($result);
-				$lane_num_rows = $row[0];
-				if ($lane_num_rows == $server_num_rows) $lane_continue = 1;
-				else echo "<br><font color='#800000' face=helvetica size=-1>".$lane_num.": Number of records do not match. Synchronization refused</font>";
+	$continue = 0;
 
-			}
-			else echo "<br><font color='#800000' face=helvetica size=-1>Unable to load new data onto ".$lane_num."</font>";
+	/* establish connection to server */
 
-		}
-
-		if ($lane_continue == 1) {
-			$lane_continue = 0;
-			if (mysql_query($opdata_truncate, $lane_conn)) {
-				if (mysql_query($opdata_insert, $lane_conn)) {
-					$qresult = mysql_query("select * from ".$table, $lane_conn);
-					$lane_num_rows = mysql_num_rows($qresult);
-					echo "<br><font color='#004080' face=helvetica size=-1>".$lane_num.": ".$lane_num_rows." records successfully synchronized";
-				}
-				else {
-					echo "<br><font color='#800000' face=helvetica size=-1>Unable to synchronize ".$lane_num."</font>";
-				}
-			}
-		}
-
+	if ($s_conn = mysql_connect(DB_HOST,DB_USER,DB_PASSWORD)) {
+	// if ($dbc) {
+		$continue = 1;
 	}
+	else {
+		echo "<p><font color='#800000' face=helvetica size=-1>Failed to connect to server<br />".mysql_error()."</font>";
 	}
 
-}
-$time = strftime("%m-%d-%y %I:%M %p", time());
-echo "<p> <p><font color='#004080' face=helvetica size=-1>last run: ".$time."</font>";
+	if ($continue == 1) {
+
+		$continue = 0;
+		if (mysql_select_db(DB_NAME, $s_conn)) $continue = 1; 
+		else echo "<p><font color='#800000' face=helvetica size=-1>Failed to connect to server database</font>";
+	}
+
+	if ($continue == 1) {
+
+		$continue = 0;
+		$result = mysql_query("SELECT COUNT(*) FROM ".$table, $s_conn);
+		$row = mysql_fetch_array($result);
+		$server_num_rows = $row[0];
+		// echo "<p><font color='#004080' face=helvetica size=-1>There are ".$server_num_rows." record(s) on server database</font>";
+		if ($server_num_rows > 5) $continue = 1;
+		else echo "<p><font color='#800000' face=helvetica size=-1>There are only ".$server_num_rows." records on the server.<br>No way</font>";
+
+	}
+/*
+	if ($continue == 1) {
+
+		$continue = 0;
+		if (file_exists($file)) exec("rm ".$file);
+		if (mysql_query($dump, $s_conn)) $continue = 1;
+		else echo "<p><font color='#800000' face=helvetica size=-1>Failed to download new data from server</font>";
+
+	}
+
+
+	if ($continue == 1) {
+
+		$continue = 0;
+		if (file_exists($file)) $continue = 1;
+		else echo "<p><font color='#800000' face=helvetica size=-1>Failed to retrieve new data from server</font>";
+
+	} 
+*/
+	// synchronize lanes
+
+	if ($continue == 1) {
+
+	//	$continue = 0;
+	//	echo "<p><font color='#004080' face=helvetica size=-1>".$server_num_rows." records downloaded from server</font>";
+	//	echo "<p>";
+	
+		$i = 1;
+		foreach ($aLane as $lane) {
+
+			if ($lane && strlen($lane) > 0) {
+				$lane_num = "lane ".$i;
+				$i++;
+				$lane_continue = 0;
+				// print "-h " . $lane . " -u " . LANE_DB_USER . " -p " . LANE_DB_PASS;
+				
+				if ($lane_conn = mysql_connect($lane, LANE_DB_USER, LANE_DB_PASS)) $lane_continue = 1;
+				else echo "<br><font color='#800000' face=helvetica size=-1>Unable to connect to ".$lane_num."</font>";
+
+				if ($lane_continue == 1) {
+					$lane_continue = 0;
+					if (mysql_select_db(LANE_DB, $lane_conn)) $lane_continue = 1;
+					else echo "<br><font color='#800000' face=helvetica size=-1>Unable to select database on ".$lane_num."</font>";
+				}
+
+				if ($lane_continue == 1) {
+					$lane_continue = 0;
+					mysql_query($is4c_op_truncate, $lane_conn);
+
+					if (synctable($table,$lane) == 1) {
+						$result = mysql_query("select count(*) from " . DB_NAME . "." . $table, $lane_conn);
+						$row = mysql_fetch_array($result);
+						$lane_num_rows = $row[0];
+						if ($lane_num_rows == $server_num_rows) $lane_continue = 1;
+						else echo "<br><font color='#800000' face=helvetica size=-1>".$lane_num.": Number of records do not match. Synchronization refused</font>";
+					}
+					else echo "<br><font color='#800000' face=helvetica size=-1>Unable to load new data onto ".$lane_num."</font>";
+				}
+
+				if ($lane_continue == 1) {
+					$lane_continue = 0;
+					if (mysql_query($opdata_truncate, $lane_conn)) {
+						if (mysql_query($opdata_insert, $lane_conn)) {
+							$qresult = mysql_query("select * from ".$table, $lane_conn);
+							$lane_num_rows = mysql_num_rows($qresult);
+							echo "<br><font color='#004080' face=helvetica size=-1>".$lane_num.": ".$lane_num_rows." records successfully synchronized";
+						}
+						else {
+							echo "<br><font color='#800000' face=helvetica size=-1>Unable to synchronize ".$lane_num."</font>";
+						}
+					}
+				}
+			}
+		}
+	}
+	$time = strftime("%m-%d-%y %I:%M %p", time());
+	echo "<p> <p><font color='#004080' face=helvetica size=-1>last run: ".$time."</font>";
 
 
 
 }
 
-function synctable($table,$serveruser,$opDB,$lane) {
+function synctable($table,$lane) {
 //	openlog("is4c_connect", LOG_PID | LOG_PERROR, LOG_LOCAL0);
 
-	if ($_SESSION["lanePass"] == "") {
-		$lanepass = "";
-	}
-	else {
-		$lanepass = "-p".$_SESSION["lanePass"];
-	}
+	$lanepass = (LANE_DB_PASS == "") ? "" : "-p".LANE_DB_PASS;
 
-	if ($_SESSION["mPass"] == "") {
-		$serverpass = "";
-	}
-	else {
-		$serverpass = "-p".$_SESSION["mPass"];
-	}
+	$serverpass = (DB_PASSWORD == "") ? "" : "-p".DB_PASSWORD;
+	
 
-	$sync =  "mysqldump -u root ".$serverpass." -t ".$opDB." ".$table
-		  ." | mysql -u root ".$lanepass." -h ".$lane." ".$opDB." 2>&1";
-//	echo $sync;
+	$sync =  "mysqldump -u ".DB_USER." ".$serverpass." -t ".DB_NAME." ".$table
+		  ." | mysql -u ".LANE_DB_USER." ".$lanepass." -h ".$lane." ".DB_NAME." 2>&1";
+	// echo $sync;
 	$error = 0;
 	$output = "";
 	exec($sync, $aResult);
@@ -221,19 +200,4 @@ function synctable($table,$serveruser,$opDB,$lane) {
 
 }
 
-/*
-
-function synctable_old($table,$serveruser,$opDB,$lane) {
-	openlog("is4c_connect", LOG_PID | LOG_PERROR, LOG_LOCAL0);
-	exec('mysqldump -u '.$serveruser.' -t '.$opDB.' '.$table.' | mysql -h '.$lane.' '.$opDB.".$table." 2>&1", $result, $return_code);
-	foreach ($result as $v) {$output .= "$v\n";}
-	if ($return_code == 0) {
-
-		return 1;
-	} else {
-		syslog(LOG_WARNING, "synctable($table) failed; rc: '$return_code', output: '$output'");
-		return 0;
-	}
-}
-*/
 ?>

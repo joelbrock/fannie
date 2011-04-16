@@ -22,7 +22,7 @@
 *********************************************************************************/
 $page_title = 'Fannie - Reporting';
 $header = 'List available reporting options.';
-include('../src/header.html');
+include('../src/header.php');
 ?>
 	<a href="deptSales.php"><font size=4>Department Sales</font></a></br>
 	Product movements by department or group of departments
@@ -47,6 +47,6 @@ include('../src/header.html');
 </br>
 
 
-<?
-include('../src/footer.html');
+<?php
+include('../src/footer.php');
 ?>

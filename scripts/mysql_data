@@ -1,0 +1,2 @@
+#!/bin/bash
+rsync -ar /var/lib/mysql/* /pos/BAK/mysql_data

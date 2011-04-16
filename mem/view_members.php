@@ -28,13 +28,13 @@
 
 $$page_title='Fannie - Member Management Module';
 $header='Search & View Members';
-include('../src/header.html');
+include('../src/header.php');
 include('./includes/header.html');
 
 // Page header.
 echo'<h1 id="mainhead">Membership</h1>';
 
-require_once ('../src/mysql_connect.php'); // Connect to the DB.
+require_once ('../define.conf'); // Connect to the DB.
 
 // How many records per page.
 $display = 50;
@@ -197,5 +197,5 @@ if ($num_pages > 1) {
 } // End of links section.
 
 include ('./includes/footer.html'); // Include the HTML footer.
-include('../src/footer.html');
+include('../src/footer.php');
 ?>

@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 setlocale(LC_MONETARY, 'en_US');
-require_once('../src/mysql_connect.php');
+require_once('../define.conf');
 
 if(isset($_POST['submit'])){
 	foreach ($_POST AS $key => $value) {
@@ -53,7 +53,7 @@ $trans_array = explode('-',$t_id);
 // else { $table = "dlog_" . date('Y');}
 $table = "dlog_" . $year;
 
-$query = "SELECT * FROM is4c_log.$table 
+$query = "SELECT * FROM " . DB_LOGNAME . ".$table 
 	WHERE DATE(datetime) = '" . $year."-".$month."-".$day . "'
 	AND emp_no = $emp_no AND register_no = $register_no AND trans_no = $trans_no
 	ORDER BY trans_id";

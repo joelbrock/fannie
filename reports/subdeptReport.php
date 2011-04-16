@@ -23,8 +23,8 @@
 // 
 
 include('../src/functions.php');
-// mysql_select_db('is4c_op',$dbc);
-require_once('../src/mysql_connect.php');
+// mysql_select_db('DB_NAME',$dbc);
+require_once('../define.conf');
 
 
 if (isset($_POST['submit'])) {
@@ -76,7 +76,7 @@ else { $table = 'dlog_' . $year1; }
 // echo "</font>";
 
 $grossQ = "SELECT ROUND(sum(total),2) as GROSS_sales
-		FROM is4c_log.$table 
+		FROM " . DB_LOGNAME . ".$table 
 		WHERE date(datetime) >= '$date1' AND date(datetime) <= '$date2' 
 		AND department IN($deptArray)
 		AND trans_status <> 'X'
@@ -101,7 +101,7 @@ $time_start = getmicrotime();
 // 		s.dept_name AS dept,
 // 		ROUND(SUM(t.quantity),2) as qty,
 // 		ROUND(SUM(t.total),2) as total
-// 		FROM is4c_log.$table t, is4c_op.subdeptindex s
+// 		FROM " . DB_LOGNAME . ".$table t, DB_NAME.subdeptindex s
 // 		WHERE t.upc = s.upc
 // 		AND date(t.datetime) >= '$date1' AND date(t.datetime) <= '$date2'
 // 		AND t.trans_type <> 'D'
@@ -113,7 +113,7 @@ $subdeptQ = "SELECT s.subdept_name AS subdept,
 		d.dept_name AS dept,
 		ROUND(SUM(t.quantity),2) as qty,
 		ROUND(SUM(t.total),2) as total
-		FROM is4c_log.$table t, is4c_op.products p, is4c_op.departments d, is4c_op.subdepts s
+		FROM " . DB_LOGNAME . ".$table t, " . DB_NAME . "." . PRODUCTS_TBL . " p, " . DB_NAME . ".departments d, " . DB_NAME . ".subdepts s
 		WHERE t.upc = p.upc AND p.department = d.dept_no AND p.subdept = s.subdept_no
 		AND date(t.datetime) >= '$date1' AND date(t.datetime) <= '$date2'
 		AND t.trans_type <> 'D'
@@ -158,7 +158,7 @@ while ($row = mysql_fetch_array ($result, MYSQL_ASSOC)) {
 
 echo '</table>';
 
-echo "<center>Query executed in <b>" . number_format($time,2) . "</b> minutes (<b>" . number_format($time_sec,2) . "</b> seconds)</center>";
+echo "<center>Query executed in <b>" . number_format($time_min,2) . "</b> minutes (<b>" . number_format($time_sec,2) . "</b> seconds)</center>";
 
 //
 // PHP INPUT DEBUG SCRIPT  -- very helpful!
@@ -177,14 +177,10 @@ echo "<center>Query executed in <b>" . number_format($time,2) . "</b> minutes (<
 
 $page_title = 'Fannie - Reporting';
 $header = 'Subdepartment Report';
-include('../src/header.html');
+include('../src/header.php');
 
-echo '<script src="../src/CalendarControl.js" language="javascript"></script>
-	<script src="../src/putfocus.js" language="javascript"></script>
-	<form method="post" action="subdeptReport.php" target="_blank">		
-	
-	<h2>Sub-Department report</h2>
-	
+echo '<script src="../src/putfocus.js" language="javascript"></script>
+	<form method="post" action="subdeptReport.php" target="_blank">			
 	<table border="0" cellspacing="5" cellpadding="5">
 		<tr> 
 			<td align="right">
@@ -192,8 +188,8 @@ echo '<script src="../src/CalendarControl.js" language="javascript"></script>
 		    	<p><b>End:</b></p>
 		    </td>
 			<td>
-		    	<p><input type=text size=10 name=date1 onclick="showCalendarControl(this);"></p>
-            	<p><input type=text size=10 name=date2 onclick="showCalendarControl(this);"></p>
+				<div class="date"><p><input type="text" name="date1" class="datepicker" />&nbsp;&nbsp;*</p></div>
+				<div class="date"><p><input type="text" name="date2" class="datepicker" />&nbsp;&nbsp;*</p></div>
 			</td>
 			<td>&nbsp;</td>
 		</tr>
@@ -215,7 +211,14 @@ echo '</tr>
 		</tr>
 	</table>
 </form>';
-include('../src/footer.html');
+include('../src/footer.php');
 }
 
 ?>
+<script>
+	$(function() {
+		$( ".datepicker" ).datepicker({ 
+			dateFormat: 'yy-mm-dd' 
+		});
+	});
+</script>

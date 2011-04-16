@@ -23,7 +23,7 @@
 // A page to view and edit a member's details.
 $page_title='Fannie - Member Management Module';
 $header='Edit A Member';
-include('../src/header.html');
+include('../src/header.php');
 include ('./includes/header.html');
 
 // Check for a valid user ID, through GET or POST.
@@ -36,11 +36,11 @@ if ( (isset($_GET['id'])) && (is_numeric($_GET['id'])) ) { // Accessed through v
 	echo '<h1 id="mainhead">Page Error</h1>
 	<p class="error">This page has been accessed in error.</p>
 	<p class="error">You have to <b><a href="find_member.php">find a member</a></b> before you can edit them.</p><p><br /><br /></p>'; 
-	include ('./includes/footer.html');
+	include ('./includes/footer.php');
 	exit();
 }
 
-require_once('../src/mysql_connect.php'); // Connect to the database.
+require_once('../define.conf'); // Connect to the database.
 
 if (isset($_POST['submitted'])) { // If the form has been submitted, check the new data and update the record.
 	
@@ -160,5 +160,5 @@ if (mysql_num_rows($result) == 1) {  // Valid id show the form.
 	<p class="error">This page has been accessed in error.</p><p><br /><br /></p>';
 }
 mysql_close(); // Close the DB connection.
-include('../src/footer.html');
+include('../src/footer.php');
 ?>

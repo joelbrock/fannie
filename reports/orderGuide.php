@@ -20,7 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-require('../src/mysql_connect.php');
+require('../define.conf');
 
 if (isset($_POST['submit']) || isset($_GET['sort'])) {
 	if(isset($_POST['submit'])){
@@ -110,7 +110,7 @@ if (isset($_POST['submit']) || isset($_GET['sort'])) {
 			p.description AS Description,
 			SUM(t.quantity) AS Qty,
 			t.discounttype AS sale
-			FROM is4c_log.$table t, is4c_op.products p
+			FROM " . DB_LOGNAME . ".$table t, DB_NAME." . PRODUCTS_TBL . " p
 			WHERE t.upc = p.upc
 			AND date(t.datetime) >= '$date1' AND date(t.datetime) <= '$date2' 
 			AND p.department IN('" .$_SESSION["deptArray"]."') 
@@ -161,46 +161,45 @@ if (isset($_POST['submit']) || isset($_GET['sort'])) {
 	}
 
 } else {
-$page_title = 'Fannie - Reporting';
-$header = 'Custom Order Guide';
-include('../src/header.html');
+	$page_title = 'Fannie - Reporting';
+	$header = 'Custom Order Guide';
+	include('../src/header.php');
 
-echo '<script src="../src/CalendarControl.js" language="javascript"></script>
-<form method="POST" action="orderGuide.php" target="_blank">		
+	echo '<form method="POST" action="orderGuide.php" target="_blank">		
 
-<div id="box">
-	<table border="0" cellspacing="3" cellpadding="3" width="100%">
-		<tr> 
-            <th>Select dept.*<th>&nbsp;<th>&nbsp;
-		</tr>
-		<tr valign="top">';
+		<div id="box">
+			<table border="0" cellspacing="3" cellpadding="3" width="100%">
+				<tr> 
+		            <th>Select dept.*<th>&nbsp;<th>&nbsp;
+				</tr>
+				<tr valign="top">';
 
-include('../src/departments.php');
+	include('../src/departments.php');
 
-echo '<td>&nbsp;</td>
-		</tr>
-		<tr>
-			<td align="right">
-				<p><b>Date Start&nbsp;</b><input type=text size=10 name=date1 onfocus="showCalendarControl(this);">&nbsp;&nbsp;*</p>
-		    	<p><b>End&nbsp;</b><input type=text size=10 name=date2 onfocus="showCalendarControl(this);">&nbsp;&nbsp;*</p>
-			</td>
-			<td>			
-				&nbsp;
-			</td>
-			<td>
-				&nbsp;
-			</td>
-		</tr>
+	echo '<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td align="right">
+					<p><b>Date Start&nbsp;</b><input type=text size=10 name=date1 onfocus="showCalendarControl(this);">&nbsp;&nbsp;*</p>
+			    	<p><b>End&nbsp;</b><input type=text size=10 name=date2 onfocus="showCalendarControl(this);">&nbsp;&nbsp;*</p>
+				</td>
+				<td>			
+					&nbsp;
+				</td>
+				<td>
+					&nbsp;
+				</td>
+			</tr>
 
-		<tr> 
-			<td align=right> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-			<td>&nbsp;</td>
-		</tr>
-	</table>
-</div>
-</form>';
-include('../src/footer.html');
+			<tr> 
+				<td align=right> <input type=submit name=submit value="Submit"> </td>
+				<td> <input type=reset name=reset value="Start Over"> </td>
+				<td>&nbsp;</td>
+			</tr>
+		</table>
+		</div>
+		</form>';
+	include('../src/footer.php');
 
 }
 ?>
