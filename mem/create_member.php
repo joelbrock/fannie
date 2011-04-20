@@ -199,7 +199,7 @@ $result5 = @mysql_query($query5);
 	// Create the form.
 
 	echo '<h2>Create a Member.</h2><br />
-	<form action="mem_create.php" name="create_member" method="post">
+	<form action="create_member.php" name="create_member" method="post">
 	<p>Card Number: <input type="text" name="card_no" size="5" maxlength="5" value="' . $max . '" /></p>
 	<h3><u><input type="checkbox" name="ps" CHECKED />  Primary Shareholder</u></h3>
 	<p>First Name: <input type="text" name="ps_first_name" size="20" maxlength="30" value="WELCOME" /></p>
